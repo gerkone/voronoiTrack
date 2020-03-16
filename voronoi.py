@@ -10,12 +10,11 @@ from utils import *
 
 class Vor:
 
-    sites = []
-    cells = []
-    edges = []
-    vertices = []
-
     def __init__(self, npoints, boundary):
+        self.sites = []
+        self.cells = []
+        self.edges = []
+        self.vertices = []
         for i in range(npoints):
             self.sites.append(Site(random.randint(0,boundary.x), random.randint(0, boundary.y)))
         vor = VoronoiGenerator([s._pos() for s in self.sites])
@@ -39,28 +38,29 @@ class Vor:
                 if not -1 in c: #exclude immaginary cells()
                     new_cell = Cell([self.vertices[v] for v in c])
                     new_cell.connectSite(found_site)
-                    print(c)
                     for v in c:
                         self.vertices[v].connectCell(new_cell)
-                        print(self.vertices[v])
-                        print(self.vertices[v].cells)
                     self.sites[int(site_index[0])].connectCell(new_cell)
                     self.cells.append(new_cell)
         for e in self.edges:
             cell_ids = intersect(get_by_ID(e.v1.id,self.vertices).cells, get_by_ID(e.v2.id,self.vertices).cells)
-            # print(get_by_ID(e.v1.id,self.vertices))
-            # print(get_by_ID(e.v2.id,self.vertices))
-            #print(cell_ids)
-            e.edges = cell_ids
-        voronoi_plot_2d(vor)
-        plt.show()
+            e.cells = cell_ids
+
+    def _adjacentCells(self, cell):
+        adj = []
+        for edge_id in cell.edges:
+            found_edge = get_by_ID(edge_id, self.edges)
+            for c in found_edge.cells:
+                if not c == cell.id
+                    adj.append([get_by_ID(c, self.cells), found_edge])
+        return adj
 
 class Site:
 
-    id = None
-    x = None
-    y = None
-    cell = None
+    # id
+    # x
+    # y
+    # cell
 
     def __init__(self, x, y):
         self.id = generator.uuid1().int
@@ -78,9 +78,9 @@ class Site:
 
 class Boundary:
 
-    x = 100
-    y = 100
-    factor = 0.1
+    # x
+    # y
+    # factor
 
     def __init__(self, x, y, factor):
         self.x = x
@@ -101,10 +101,10 @@ class Boundary:
 
 class Cell:
 
-    id = None
-    site = None
-    edges = []
-    vertices = []
+    # id
+    # site
+    # edges
+    # vertices
 
     def __init__(self, vertices):
         self.id = generator.uuid1().int
@@ -122,23 +122,15 @@ class Cell:
     def _isOutOfBounds(self, boundary):
         return any( (v.x > boundary._x_max() or v.y > boundary._y_max() or v.x < boundary._x_min() or v.y < boundary._y_min() ) for v in self.vertices)
 
-    def _adiacentCells(self):
-        adj = []
-        for e in edges:
-            for c in e.cells:
-                adj.append(c)
-        return list(filter( lambda c: c != self.id, adj ))
-
     def __str__(self):
-        ids = ", edges=" + str([str(e) for e in self.edges]) + ", vertices=" + str([str(v) for v in self.vertices])
         return str(self.id) + ": site= " + str(self.site)
 
 class Edge:
 
-    id = None
-    v1 = None
-    v2 = None
-    cells = []
+    # id
+    # v1
+    # v2
+    # cells
 
     def __init__(self, V1, V2):
         self.id = generator.uuid1().int
@@ -167,11 +159,11 @@ class Edge:
 
 class Vertice:
 
-    id = None
-    x = None
-    y = None
-    edges = []
-    cells = []
+    # id
+    # x
+    # y
+    # edges
+    # cells
 
     def __init__(self, X, Y):
         self.id = generator.uuid1().int
@@ -200,5 +192,4 @@ class Vertice:
         return (cell.id in self.cells)
 
     def __str__(self):
-        ids = ", edges=" + str([str(e) for e in self.edges])+ ", cells=" + str([str(c) for c in self.cells])
         return str(self.id) + ": x= " + str(self.x) + ", y= " + str(self.y)
