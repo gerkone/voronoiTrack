@@ -1,3 +1,4 @@
+# System defined imports
 from scipy.spatial import Voronoi as VoronoiGenerator
 from scipy.spatial import voronoi_plot_2d
 import matplotlib.pyplot as plt
@@ -6,6 +7,7 @@ import math
 import uuid as generator
 import random
 
+#User defined imports
 from utils import *
 
 class Vor:
