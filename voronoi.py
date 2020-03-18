@@ -6,6 +6,7 @@ import numpy as np
 import math
 import uuid as generator
 import random
+from itertools import cycle
 
 #User defined imports
 from utils import *
@@ -17,8 +18,10 @@ class Vor:
         self.cells = []
         self.edges = []
         self.vertices = []
+        randx = random.sample(range(boundary.x+1),npoints)  #random xs no repetition
+        randy = random.sample(range(boundary.y+1),npoints)  #random ys no repetition
         for i in range(npoints):
-            self.sites.append(Site(random.randint(0,boundary.x), random.randint(0, boundary.y)))
+            self.sites.append(Site(randx[i], randy[i]))
         vor = VoronoiGenerator([s._pos() for s in self.sites])
         #creating all voronoi vertices
         for v in vor.vertices:
@@ -47,27 +50,23 @@ class Vor:
         for e in self.edges:
             cell_ids = intersect(get_by_ID(e.v1,self.vertices).cells, get_by_ID(e.v2,self.vertices).cells)
             e.cells = cell_ids
+            for cid in cell_ids:
+                self._element(cid).connectEdge(e)
         self.cleanup()
 
     def cleanup(self):
-        toRemove = []
-        for i in range(len(self.edges)):
-            if len(self.edges[i].cells) == 0 or self.edges[i].v1 == None or self.edges[i].v2 == None:
-                toRemove.append(i)
-        for i in reversed(toRemove):
-            self.edges.pop(i)
-        toRemove = []
-        for i in range(len(self.vertices)):
-            if len(self.vertices[i].cells) == 0 or len(self.vertices[i].edges) < 2:
-                toRemove.append(i)
-        for i in reversed(toRemove):
-            self.vertices.pop(i)
-        toRemove = []
-        for i in range(len(self.cells)):
-            if len(self.cells[i].vertices) < 3 or len(self.cells[i].edges) < 2:
-                toRemove.append(i)
-        for i in reversed(toRemove):
-            self.cells.pop(i)
+        for v in self.vertices:
+            if len(v.edges) < 2:
+                self.vertices.remove(v)
+                self.deleteElement(v)
+        for e in self.edges:
+            if e.v1 is None or e.v2 is None or len(e.cells) < 1:
+                self.edges.remove(e)
+                self.deleteElement(e)
+        for c in self.cells:
+            if len(c.edges) != len(c.vertices):
+                self.cells.remove(c)
+                self.deleteElement(c)
 
     def deleteElement(self, element, cleanup=True):
         for e in self.edges:
@@ -107,12 +106,18 @@ class Vor:
         if boundary:
             plt.xlim(left=boundary._x_min(), right=boundary._x_max())
             plt.ylim(bottom=boundary._y_min(), top=boundary._y_max())
-        plt.plot([s.x for s in self.sites], [s.y for s in self.sites], "ro", ms=2)
-        for e in self.edges:
+        plt.plot([s.x for s in self.sites], [s.y for s in self.sites], "ko", ms=2)  #plot of sites
+        for e in self.edges:    #plot of edges
             v1 = self._element(e.v1)
             v2 = self._element(e.v2)
-            plt.plot([v1.x, v2.x], [v1.y, v2.y], "k", lw=1)
-        plt.plot([v.x for v in self.vertices], [v.y for v in self.vertices], "go", ms=4)
+            plt.plot([v1.x, v2.x], [v1.y, v2.y], "k", lw=3)
+        plt.plot([v.x for v in self.vertices], [v.y for v in self.vertices], "go", ms=4) #plot of vertices
+        cycol = cycle('bgrcmy')
+        ax = plt.axes()
+        for c in self.cells:
+            xs = [self._element(v).x for v in c.vertices]
+            ys = [self._element(v).y for v in c.vertices]
+            ax.fill(xs,ys,color=next(cycol))
         plt.show()
 
     def _is_out_of_bounds(self, element, boundary):
@@ -194,8 +199,8 @@ class Cell:
         self.site = site.id
 
     def purge(self, element):
-        self.vertices = filter(lambda v: v != element.id, self.vertices)
-        self.edges = filter(lambda e: e != element.id, self.edges)
+        self.vertices = list(filter(lambda v: v != element.id, self.vertices))
+        self.edges = list(filter(lambda e: e != element.id, self.edges))
 
     def __str__(self):
         return str(self.id) + ": site= " + str(self.site)
@@ -218,7 +223,7 @@ class Edge:
             self.cells.append(cell.id)
 
     def purge(self, element):
-        self.cells = filter(lambda c: c != element.id, self.cells)
+        self.cells = list(filter(lambda c: c != element.id, self.cells))
         if self.v1 == element.id:
             self.v1 = None
         if self.v2 == element.id:
@@ -262,8 +267,8 @@ class Vertice:
             self.cells.append(cell.id)
 
     def purge(self, element):
-        self.cells = filter(lambda c: c != element.id, self.cells)
-        self.edges = filter(lambda e: e != element.id, self.edges)
+        self.cells = list(filter(lambda c: c != element.id, self.cells))
+        self.edges = list(filter(lambda e: e != element.id, self.edges))
 
     def _equal(self, v):
         return (v.id == self.id)

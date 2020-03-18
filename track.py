@@ -2,18 +2,24 @@ from voronoi import *
 from utils import *
 import random as rand
 
-boundary = Boundary(100, 100, 0.1)
-vor = None
-count = 0;
-while vor is None and count < 20:
-    count = count + 1
-    try:
-        vor = Vor(20, boundary)
-    except TypeError:
-        print("A cell had 2 sites associated for some reason.... (could be that 2 points are the same)")
-vor._plot(boundary)
-# vor.deleteElement(rand.choice(vor.cells))
-# vor._plot(boundary)
+BOUNDARY_DEFAULT_SCALE = 0.1
+
+class Track:
+
+    # track = []
+
+    def __init__(self, boundary, npoints, verbose=False, scale=BOUNDARY_DEFAULT_SCALE):
+        self.track = []
+        self.boundary = Boundary(boundary[0],boundary[1], scale)
+        self.figure = Vor(npoints, self.boundary)
+        for el in self.figure.vertices:
+            if(el._isOutOfBounds(self.boundary)):
+                self.figure.deleteElement(el, False)
+        self.figure.cleanup()
+
+track = Track([100,100],70)
+
+track.figure._plot(track.boundary)
 
 #Select a random starting cell not out_of_bounds
 
