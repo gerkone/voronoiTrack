@@ -1,9 +1,10 @@
 from voronoi import *
 from utils import *
-from random as rand
+import random as rand
 
 boundary = Boundary(100, 100, 0.1)
 vor = Vor(20, boundary)
+vor._plot(boundary, True)
 
 #Select a random starting cell not out_of_bounds
 track_cells = []
@@ -13,7 +14,7 @@ if not vor.cells[rnd]._isOutOfBounds(boundary):
 
 #continuiamo a scegliere celle adiacenti non out_of_bounds fino a che non raggiungiamo il p% delle celle totali non out_of_bounds
 
-#eliminiamo i punti interni (ossia i punti che appartengono a più di 2 edges)
+#eliminiamo i pnti e gli spigoli interni
 
 #rimuoviamo eventuali punti troppo allineati
 

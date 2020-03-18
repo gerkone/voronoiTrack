@@ -45,7 +45,7 @@ class Vor:
                     self.sites[int(site_index[0])].connectCell(new_cell)
                     self.cells.append(new_cell)
         for e in self.edges:
-            cell_ids = intersect(get_by_ID(e.v1.id,self.vertices).cells, get_by_ID(e.v2.id,self.vertices).cells)
+            cell_ids = intersect(get_by_ID(e.v1,self.vertices).cells, get_by_ID(e.v2,self.vertices).cells)
             e.cells = cell_ids
 
     def _adjacentCells(self, cell):
@@ -53,9 +53,37 @@ class Vor:
         for edge_id in cell.edges:
             found_edge = get_by_ID(edge_id, self.edges)
             for c in found_edge.cells:
-                if not c == cell.id
+                if not c == cell.id:
                     adj.append([get_by_ID(c, self.cells), found_edge])
         return adj
+
+    def _element(self, ID):
+        element = get_by_ID(ID, self.cells)
+        if element is not None:
+            return element
+        element = get_by_ID(ID, self.edges)
+        if element is not None:
+            return element
+        element = get_by_ID(ID, self.vertices)
+        if element is not None:
+            return element
+        element = get_by_ID(ID, self.sites)
+        if element is not None:
+            return element
+        return None
+
+
+    def _plot(self, boundary, adjust):
+        if adjust:
+            plt.xlim(left=boundary._x_min(), right=boundary._x_max())
+            plt.ylim(bottom=boundary._y_min(), top=boundary._y_max())
+        plt.plot([s.x for s in self.sites], [s.y for s in self.sites], "ro", ms=2)
+        for e in self.edges:
+            v1 = self._element(e.v1)
+            v2 = self._element(e.v2)
+            plt.plot([v1.x, v2.x], [v1.y, v2.y], "k", lw=1)
+        plt.plot([v.x for v in self.vertices], [v.y for v in self.vertices], "go", ms=4)
+        plt.show()
 
 class Site:
 
@@ -136,8 +164,8 @@ class Edge:
 
     def __init__(self, V1, V2):
         self.id = generator.uuid1().int
-        self.v1 = V1
-        self.v2 = V2
+        self.v1 = V1.id
+        self.v2 = V2.id
         self.cells = []
 
     def connectCell(self, cell):
