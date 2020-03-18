@@ -64,7 +64,7 @@ class Vor:
             self.vertices.pop(i)
         toRemove = []
         for i in range(len(self.cells)):
-            if len(self.cells[i].vertices) < 3 or len(self.cells[i].edges) < 3:
+            if len(self.cells[i].vertices) < 3 or len(self.cells[i].edges) < 2:
                 toRemove.append(i)
         for i in reversed(toRemove):
             self.cells.pop(i)
