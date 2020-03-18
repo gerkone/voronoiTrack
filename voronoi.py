@@ -101,8 +101,8 @@ class Vor:
             return element
         return None
 
-    def _plot(self, boundary, adjust):
-        if adjust:
+    def _plot(self, boundary=None):
+        if boundary:
             plt.xlim(left=boundary._x_min(), right=boundary._x_max())
             plt.ylim(bottom=boundary._y_min(), top=boundary._y_max())
         plt.plot([s.x for s in self.sites], [s.y for s in self.sites], "ro", ms=2)
