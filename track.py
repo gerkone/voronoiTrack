@@ -4,7 +4,6 @@ import random as rand
 
 boundary = Boundary(100, 100, 0.1)
 vor = Vor(20, boundary)
-vor.cleanup()
 vor._plot(boundary)
 
 #Select a random starting cell not out_of_bounds

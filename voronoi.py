@@ -47,6 +47,7 @@ class Vor:
         for e in self.edges:
             cell_ids = intersect(get_by_ID(e.v1,self.vertices).cells, get_by_ID(e.v2,self.vertices).cells)
             e.cells = cell_ids
+        self.cleanup()
 
     def cleanup(self):
         toRemove = []
