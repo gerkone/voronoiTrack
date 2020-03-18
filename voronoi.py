@@ -218,7 +218,7 @@ class Edge:
             self.cells.append(cell.id)
 
     def purge(self, element):
-        self.edges = filter(lambda e: e != element.id, self.edges)
+        self.cells = filter(lambda c: c != element.id, self.cells)
         if self.v1 == element.id:
             self.v1 = None
         if self.v2 == element.id:

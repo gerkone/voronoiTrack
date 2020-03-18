@@ -3,8 +3,17 @@ from utils import *
 import random as rand
 
 boundary = Boundary(100, 100, 0.1)
-vor = Vor(20, boundary)
+vor = None
+count = 0;
+while vor is None and count < 20:
+    count = count + 1
+    try:
+        vor = Vor(20, boundary)
+    except TypeError:
+        print("A cell had 2 sites associated for some reason.... (could be that 2 points are the same)")
 vor._plot(boundary)
+# vor.deleteElement(rand.choice(vor.cells))
+# vor._plot(boundary)
 
 #Select a random starting cell not out_of_bounds
 
