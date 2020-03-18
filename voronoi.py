@@ -114,6 +114,20 @@ class Vor:
         plt.plot([v.x for v in self.vertices], [v.y for v in self.vertices], "go", ms=4)
         plt.show()
 
+    def _is_out_of_bounds(self, element, boundary):
+        if element.__class__.__name__ == "Cell":
+            cell = self._element(element.id)
+            return any( self._element(v)._isOutOfBounds(boundary) for v in cell.vertices )
+        if element.__class__.__name__ == "Edge":
+            edge = self._element(element.id)
+            return (self._element(edge.v1)._isOutOfBounds(boundary) or self._element(edge.v2)._isOutOfBounds(boundary))
+        if element.__class__.__name__ == "Vertice":
+            vertice = self._element(element.id)
+            return vertice._isOutOfBounds(boundary)
+        if element.__class__.__name__ == "Site":
+            return False
+        return None
+
 class Site:
 
     # id
@@ -181,9 +195,6 @@ class Cell:
     def purge(self, element):
         self.vertices = filter(lambda v: v != element.id, self.vertices)
         self.edges = filter(lambda e: e != element.id, self.edges)
-
-    def _isOutOfBounds(self, boundary):
-        return any( (v.x > boundary._x_max() or v.y > boundary._y_max() or v.x < boundary._x_min() or v.y < boundary._y_min() ) for v in self.vertices)
 
     def __str__(self):
         return str(self.id) + ": site= " + str(self.site)
@@ -267,3 +278,6 @@ class Vertice:
 
     def __str__(self):
         return str(self.id) + ": x= " + str(self.x) + ", y= " + str(self.y)
+
+    def _isOutOfBounds(self, boundary):
+        return (self.x > boundary._x_max() or self.x < boundary._x_min() or self.y > boundary._y_max() or self.y < boundary._y_min())
