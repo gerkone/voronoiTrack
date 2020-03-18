@@ -69,14 +69,15 @@ class Vor:
         for i in reversed(toRemove):
             self.cells.pop(i)
 
-    def deleteElement(self, element):
+    def deleteElement(self, element, cleanup=True):
         for e in self.edges:
             e.purge(element)
         for v in self.vertices:
             v.purge(element)
         for c in self.cells:
             c.purge(element)
-        self.cleanup()
+        if cleanup:
+            self.cleanup()
 
     def _adjacentCells(self, cell):
         adj = []
