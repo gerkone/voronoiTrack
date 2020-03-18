@@ -68,6 +68,14 @@ class Vor:
         for i in reversed(toRemove):
             self.cells.pop(i)
 
+    def deleteElement(self, element):
+        for e in self.edges:
+            e.purge(element)
+        for v in self.vertices:
+            v.purge(element)
+        for c in self.cells:
+            c.purge(element)
+
     def _adjacentCells(self, cell):
         adj = []
         for edge_id in cell.edges:
@@ -91,7 +99,6 @@ class Vor:
         if element is not None:
             return element
         return None
-
 
     def _plot(self, boundary, adjust):
         if adjust:
@@ -160,7 +167,7 @@ class Cell:
         self.id = generator.uuid1().int
         self.vertices = [v.id for v in vertices]
         self.edges = []
-        self.vertices = []
+        self.site = None
 
     def connectEdge(self, edge):
         if (edge.id not in self.edges):
@@ -168,6 +175,10 @@ class Cell:
 
     def connectSite(self, site):
         self.site = site.id
+
+    def purge(self, element):
+        self.vertices = filter(lambda v: v != element.id, self.vertices)
+        self.edges = filter(lambda e: e != element.id, self.edges)
 
     def _isOutOfBounds(self, boundary):
         return any( (v.x > boundary._x_max() or v.y > boundary._y_max() or v.x < boundary._x_min() or v.y < boundary._y_min() ) for v in self.vertices)
@@ -191,6 +202,13 @@ class Edge:
     def connectCell(self, cell):
         if cell.id not in self.cells:
             self.cells.append(cell.id)
+
+    def purge(self, element):
+        self.edges = filter(lambda e: e != element.id, self.edges)
+        if self.v1 == element.id:
+            self.v1 = None
+        if self.v2 == element.id:
+            self.v2 = None
 
     def _length(self):
         return sqrt((v1.x - v2.x)**2 + (v1.y - v2.y)**2)
@@ -228,6 +246,10 @@ class Vertice:
     def connectCell(self, cell):
         if cell.id not in self.cells:
             self.cells.append(cell.id)
+
+    def purge(self, element):
+        self.cells = filter(lambda c: c != element.id, self.cells)
+        self.edges = filter(lambda e: e != element.id, self.edges)
 
     def _equal(self, v):
         return (v.id == self.id)
