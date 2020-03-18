@@ -75,6 +75,7 @@ class Vor:
             v.purge(element)
         for c in self.cells:
             c.purge(element)
+        self.cleanup()
 
     def _adjacentCells(self, cell):
         adj = []
