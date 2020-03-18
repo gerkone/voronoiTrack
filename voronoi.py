@@ -48,6 +48,26 @@ class Vor:
             cell_ids = intersect(get_by_ID(e.v1,self.vertices).cells, get_by_ID(e.v2,self.vertices).cells)
             e.cells = cell_ids
 
+    def cleanup(self):
+        toRemove = []
+        for i in range(len(self.edges)):
+            if len(self.edges[i].cells) == 0 or self.edges[i].v1 == None or self.edges[i].v2 == None:
+                toRemove.append(i)
+        for i in reversed(toRemove):
+            self.edges.pop(i)
+        toRemove = []
+        for i in range(len(self.vertices)):
+            if len(self.vertices[i].cells) == 0 or len(self.vertices[i].edges) < 2:
+                toRemove.append(i)
+        for i in reversed(toRemove):
+            self.vertices.pop(i)
+        toRemove = []
+        for i in range(len(self.cells)):
+            if len(self.cells[i].vertices) < 3 or len(self.cells[i].edges) < 3:
+                toRemove.append(i)
+        for i in reversed(toRemove):
+            self.cells.pop(i)
+
     def _adjacentCells(self, cell):
         adj = []
         for edge_id in cell.edges:

@@ -4,13 +4,14 @@ import random as rand
 
 boundary = Boundary(100, 100, 0.1)
 vor = Vor(20, boundary)
+vor.cleanup()
 vor._plot(boundary, True)
 
 #Select a random starting cell not out_of_bounds
-track_cells = []
-rnd = rand.randrange(len(vor.cells))
-if not vor.cells[rnd]._isOutOfBounds(boundary):
-    track_cells.append(vor.cells[rnd])
+# track_cells = []
+# rnd = rand.randrange(len(vor.cells))
+# if not vor.cells[rnd]._isOutOfBounds(boundary):
+#     track_cells.append(vor.cells[rnd])
 
 #continuiamo a scegliere celle adiacenti non out_of_bounds fino a che non raggiungiamo il p% delle celle totali non out_of_bounds
 
