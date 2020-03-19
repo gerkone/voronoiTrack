@@ -83,8 +83,8 @@ class Vor:
         for edge_id in cell.edges:
             found_edge = get_by_ID(edge_id, self.edges)
             for c in found_edge.cells:
-                if not c == cell.id:
-                    adj.append([get_by_ID(c, self.cells), found_edge])
+                if c != cell.id:
+                    adj.append(get_by_ID(c, self.cells))
         return adj
 
     def _element(self, ID):

@@ -1,6 +1,7 @@
 from voronoi import *
 from utils import *
 import random as rand
+from collections import deque
 
 BOUNDARY_DEFAULT_SCALE = 0.1
 
@@ -17,13 +18,38 @@ class Track:
                 self.figure.deleteElement(el, False)
         self.figure.cleanup()
 
+    def selectTrackArea(self, perc, delete=True):
+        print("there are "+str(len(self.figure.cells))+" cells in total")
+        selected = []
+        q = deque()
+        q.append(rand.choice(self.figure.cells))
+        # print("adding first cell to queue")
+        while float(len(selected))/len(self.figure.cells) < perc:
+            examined_cell = q.popleft()
+            # print("popping cell from queue")
+            # print("queue length is now " + str(len(q)))
+            adjacent_cells = self.figure._adjacentCells(examined_cell)
+            # print("found "+str(len(adjacent_cells)) +" adjacent cells")
+            for adjacent_cell in adjacent_cells:
+                if adjacent_cell not in q:
+                    # print("adding adjacent cell to queue")
+                    q.append(adjacent_cell)
+                else:
+                    # print("found a cell that was already added")
+                    pass
+            selected.append(examined_cell)
+            # print("selected is now "+str(len(selected)))
+            # print("queue is now "+str(len(q)))
+            # print("current coverage factor is "+ str(float(len(selected))/len(self.figure.cells)))
+        print("selected is now "+str(len(selected)))
+        print("queue is now "+str(len(q)))
+        print("current coverage factor is "+ str(float(len(selected))/len(self.figure.cells)))
+        q.clear()
+
 track = Track([100,100],70)
+track.figure._plot(boundary = track.boundary)
 
-track.figure._plot(track.boundary)
-
-#Select a random starting cell not out_of_bounds
-
-#continuiamo a scegliere celle adiacenti non out_of_bounds fino a che non raggiungiamo il p% delle celle totali non out_of_bounds
+#select a percentage of the cells in the figure
 
 #eliminiamo i pnti e gli spigoli interni
 
