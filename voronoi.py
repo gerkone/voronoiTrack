@@ -3,7 +3,6 @@ from scipy.spatial import Voronoi as VoronoiGenerator
 from scipy.spatial import voronoi_plot_2d
 import matplotlib.pyplot as plt
 import numpy as np
-import math
 import uuid as generator
 import random
 from itertools import cycle
@@ -25,7 +24,7 @@ class Vor:
         vor = VoronoiGenerator([s._pos() for s in self.sites])
         #creating all voronoi vertices
         for v in vor.vertices:
-            new_vertice = Vertice(v[0],v[1])
+            new_vertice = Vertex(v[0],v[1])
             self.vertices.append(new_vertice)
         #creating all voronoi edges
         for e in vor.ridge_vertices:
@@ -102,6 +101,10 @@ class Vor:
             return element
         return None
 
+    def _perimeter(self, cell):
+        _edge = lambda e: get_by_ID(e,self.edges)
+        return sum(distance(_edge(e).v1, _edge(e).v2)*len(e.cells) for e in cell.edges)
+
     def _plot(self, boundary=None):
         if boundary:
             plt.xlim(left=boundary._x_min(), right=boundary._x_max())
@@ -127,7 +130,7 @@ class Vor:
         if element.__class__.__name__ == "Edge":
             edge = self._element(element.id)
             return (self._element(edge.v1)._isOutOfBounds(boundary) or self._element(edge.v2)._isOutOfBounds(boundary))
-        if element.__class__.__name__ == "Vertice":
+        if element.__class__.__name__ == "Vertex":
             vertice = self._element(element.id)
             return vertice._isOutOfBounds(boundary)
         if element.__class__.__name__ == "Site":
@@ -229,22 +232,13 @@ class Edge:
         if self.v2 == element.id:
             self.v2 = None
 
-    def _length(self):
-        return sqrt((v1.x - v2.x)**2 + (v1.y - v2.y)**2)
-
-    def _angle(self):
-        return math.degree(math.atan((v1.y - v2.y)/(v1.x - v2.x)))
-
-    def _vertices(self):
-        return [self.v1, self.v2]
-
     def _connectedToCell(self, cell):
         return (cell.id in self.cells)
 
     def __str__(self):
         return str(self.id) + ": v1=" + str(self.v1) + ": v2=" + str(self.v2)
 
-class Vertice:
+class Vertex:
 
     # id
     # x

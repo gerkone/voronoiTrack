@@ -1,3 +1,6 @@
+def distance(q1,q2):
+	((q1.x - q2.x)**2 + (q1.y - q2.y)**2)**0.5
+
 def intersect(L1,L2):
 	t = set(L2)
 	LI = [x for x in L1 if x in t]
