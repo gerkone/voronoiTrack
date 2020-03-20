@@ -11,3 +11,7 @@ def get_by_ID(id,L):
 		if el.id == id:
 			return el
 	return None
+
+def simple_log(data, filename="seeds.log"):
+	with open(filename, 'a') as f:
+		f.write(data)
