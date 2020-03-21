@@ -15,3 +15,10 @@ def get_by_ID(id,L):
 def simple_log(data, filename="seeds.log"):
 	with open(filename, 'a') as f:
 		f.write(data)
+
+def in_hull(p, hull):
+    from scipy.spatial import Delaunay
+    if not isinstance(hull,Delaunay):
+        hull = Delaunay(hull)
+
+    return hull.find_simplex(p)>=0

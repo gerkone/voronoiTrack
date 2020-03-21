@@ -90,8 +90,20 @@ class Vor:
                     adj.append(self._element(cell_id))
         return adj
 
-    def _filter_selected(self):
+    def _filter_selected_cells(self):
         return [c for c in self.cells if c.selected]
+
+    def _filter_outside_edges(self):
+        ext = []
+        for e in self.edges:
+            i = 0
+            for c in e.cells:
+                cell = self._element(c)
+                if cell.selected:
+                    i = i + 1
+            if i == 1:
+                ext.append(e)
+        return ext
 
     def _element(self, ID):
         element = get_by_ID(ID, self.cells)
