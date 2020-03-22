@@ -1,16 +1,18 @@
-from voronoi import *
-from utils import *
 import random as rand
 import scipy
+import math
 from collections import deque
 import matplotlib.pyplot as plt
+
+from voronoi import *
+from utils import *
 
 BOUNDARY_DEFAULT_SCALE = 0.1
 
 class Track:
 
-    # straights = []
-    # corners = []
+    # straights = [] of obj corner
+    # corners = [] of obj corner
 
     def __init__(self, boundary, npoints, seed, verbose=False, scale=BOUNDARY_DEFAULT_SCALE):
         self.boundary = Boundary(boundary[0],boundary[1], scale)
@@ -19,6 +21,17 @@ class Track:
             if(el._is_out_of_bounds(self.boundary)):
                 self.figure.delete_element(el, False)
         self.figure.cleanup()
+        self.straights = []
+        self.corners = []
+
+    def _element(self, ID):
+        element = get_by_ID(ID, self.straights)
+        if element is not None:
+            return element
+        element = get_by_ID(ID, self.corners)
+        if element is not None:
+            return element
+        return None
 
     def select_bfs(self, perc):
         areaTot = sum([self.figure._area(c) for c in self.figure.cells])
@@ -70,6 +83,42 @@ class Track:
             v2 = self.figure._element(e.v2)
             plt.plot([v1.x, v2.x], [v1.y, v2.y], "k", lw=1)
         plt.show()
+
+    def round(self, corner, previous_f=None):
+        if previous_f and previous_f > 0.1:
+            f = 1-previous_f
+        else:
+            f = random.uniform(0.1, 0.5)
+        A = self._element(self._element(corner.previousStraight).startNode)
+        B = corners
+        C = self._element(self._element(corner.nextStraight).endNode)
+        m1 = float(B.y-A.y)/float(B.x-A.x)
+        m2 = float(B.y-C.y)/float(B.x-C.x)
+        l1 = distance(A, B)
+        l2 = distance(B, C)
+        alfa = math.acos(((B.x-A.x)*(B.x-C.x)+(B.y-A.y)*(B.y-C.y))/float(l1*l2))
+        r = f*math.tan(alfa/2.0)*min(l1, l2)
+        t = r/math.tan(alfa/2.0)
+        costan = lambda x: math.cos(math.atan(x))
+        sintan = lambda x: math.sin(math.atan(x))
+        if A.x > B.x:
+            T1 = [B.x+t*costan(m1), B.y+t*sintan(m2)]
+        elif A.x < B.x:
+            T1 = [B.x-t*tcostan(m1), B.y-t*sintan(m2)]
+        else:
+            raise Exception("Two consecutive points where aligned vertically")
+        if C.x > B.x:
+            T2 = [B.x+t*costan(m2), B.y+t*sintan(m1)]
+        elif C.x < B.x:
+            T2 = [B.x-t*costan(m2), B.y-t*sintan(m1)]
+        else:
+            raise Exception("Two consecutive points where aligned vertically")
+        C = [float(m2*T1[0] + m1*m2*T1[1] - m1*T2[x] - m1*m2*T2[1])/float(m2-m1), float(T2[0]+m2*T2[1] - T1[0] - m1*T1[0])/float(m2-m1)]
+        corner.radius = r
+        corner.center = C
+        corner.arcStart = T1
+        corner.arcFInish = T2
+        corner.flagBlend()
 
 track = Track([100,100],70,rand.randint(0,2**32-1))
 track.select(0.5)

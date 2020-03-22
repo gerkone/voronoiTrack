@@ -21,8 +21,6 @@ class Straight:
     def setPreviousSTraight(self, previous):
         self.previousStraight = previous.id
 
-
-
 class Corner:
 
     #id
@@ -43,6 +41,7 @@ class Corner:
         self.previousStraight = previous.id
         self.nextStraight = next.id
         self.spline = False
+        self.blend = False
         self.radius = None
         self.center = None
         self.arcStart = None
@@ -50,3 +49,6 @@ class Corner:
 
     def flagSpline(self):
         self.spline = True
+
+    def flagBlend(self):
+        self.blend = True
