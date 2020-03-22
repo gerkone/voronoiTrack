@@ -9,12 +9,10 @@ BOUNDARY_DEFAULT_SCALE = 0.1
 
 class Track:
 
-    # track = []
     # straights = []
-    # corners_tips = []
+    # corners = []
 
     def __init__(self, boundary, npoints, seed, verbose=False, scale=BOUNDARY_DEFAULT_SCALE):
-        self.track = []
         self.boundary = Boundary(boundary[0],boundary[1], scale)
         self.figure = Vor(npoints, self.boundary,seed)
         for el in self.figure.vertices:

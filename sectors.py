@@ -2,10 +2,16 @@ import uuid as generator
 
 class Straight:
 
+    #id
+    #startNode = id
+    #startNode = id
+    #nextStraight = id
+    #previousStraight = id
+
     def __init__(self, start, end):
         self.id = generator.uuid1().int
-        self.startNode = start
-        self.endNode = end
+        self.startNode = start.id
+        self.endNode = end.id
         self.nextStraight = None
         self.previousStraight = None
 
@@ -15,28 +21,32 @@ class Straight:
     def setPreviousSTraight(self, previous):
         self.previousStraight = previous.id
 
-class Node: 
 
-    def __init__(self, x, y):
-        self.id = generator.uuid1().int
-        self.x = x
-        self.y = y
-        self.prevoiusStraight = None
-        self.nextStraight = None
 
 class Corner:
 
-    def __init__(self, node, previous, next):
+    #id
+    #x
+    #y
+    #previousStraight = id
+    #nextStraight = id
+    #spline = bool
+    #radius = calc
+    #center = calc
+    #arcStart = calc
+    #arcFInish = calc
+
+    def __init__(self, x, y, previous, next):
         self.id = generator.uuid1().int
-        self.node = node
-        self.previousStraight = previous
-        self.nextStraight = next
+        self.x = x
+        self.y = y
+        self.previousStraight = previous.id
+        self.nextStraight = next.id
         self.spline = False
         self.radius = None
         self.center = None
         self.arcStart = None
         self.arcFInish = None
 
-    # TODO: metodo per calcolo di raggio e centro di curvatura
-    # TODO: flag per la splinatura
-    # TODO: metodo per la generazione di punti densi
+    def flagSpline(self):
+        self.spline = True
