@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 from voronoi import *
 from utils import *
+from sectors import *
 
 BOUNDARY_DEFAULT_SCALE = 0.1
 
@@ -25,6 +26,9 @@ class Track:
         self.corners = []
 
     def _element(self, ID):
+        if ID is None:
+            print("ID of _element is None")
+            return None
         element = get_by_ID(ID, self.straights)
         if element is not None:
             return element
@@ -74,14 +78,57 @@ class Track:
         else:
             self.select_bfs(perc)
 
+        vertices = []
+        out_edges = self.figure._filter_outside_edges()
+        for e in out_edges:
+            if (e.v1 not in vertices):
+                vertices.append(e.v1)
+            if (e.v2 not in vertices):
+                vertices.append(e.v2)
+        track_cell = Cell([self.figure._element(v) for v in vertices])  #single cell representing the track
+        for e in out_edges:
+            track_cell.connect_edge(e)
+        sorted_edges, sorted_vertices = self.figure.sort(track_cell)
+
+        # t1 = Corner(sorted_vertices[-1].x,sorted_vertices[-1].y)
+        # t0 = Corner(sorted_vertices[0].x,sorted_vertices[0].y)
+        # self.corners.append(t1)
+        # self.straights.append(Straight(t1,t0))
+        # for i in range(1, len(sorted_edges)-1):
+        #     t1 = Corner(sorted_vertices[i].x,sorted_vertices[i].y)
+        #     self.corners.append(t0)
+        #     self.straights.append(Straight(t0,t1))
+        #     t0 = t1
+        # self.straights.append(Straight(t1,self.corners[0]))
+
+    # def plot_out(self):
+    #     ext = self.figure._filter_outside_edges()
+    #     plt.xlim(left=self.boundary._x_min(), right=self.boundary._x_max())
+    #     plt.ylim(bottom=self.boundary._y_min(), top=self.boundary._y_max())
+    #     for e in ext:
+    #         v1 = self.figure._element(e.v1)
+    #         v2 = self.figure._element(e.v2)
+    #         plt.plot([v1.x, v2.x], [v1.y, v2.y], "k", lw=1)
+    #     plt.show()
+
+
     def plot_out(self):
-        ext = self.figure._filter_outside_edges()
+        ext = self.straights
         plt.xlim(left=self.boundary._x_min(), right=self.boundary._x_max())
         plt.ylim(bottom=self.boundary._y_min(), top=self.boundary._y_max())
         for e in ext:
-            v1 = self.figure._element(e.v1)
-            v2 = self.figure._element(e.v2)
+            v1 = self._element(e.startNode)
+            v2 = self._element(e.endNode)
             plt.plot([v1.x, v2.x], [v1.y, v2.y], "k", lw=1)
+            label1 = "start"
+            plt.annotate(label1,[v1.x, v1.y], textcoords="offset points", xytext=(0,10), ha='center')
+        plt.show()
+
+    def plot_fill(self):
+        ax = plt.axes()
+        xs = [v.x for v in self.corners]
+        ys = [v.y for v in self.corners]
+        ax.fill(xs,ys,color="r")
         plt.show()
 
     def round(self, corner, previous_f=None):
@@ -122,8 +169,14 @@ class Track:
 
 track = Track([100,100],70,rand.randint(0,2**32-1))
 track.select(0.5)
-track.figure.plot(boundary = track.boundary)
+# track.figure.plot(boundary = track.boundary)
+print(str(len(track.straights)))
+print(str(len(track.corners)))
 track.plot_out()
+# track.plot_fill()
+
+
+
 #select a percentage of the cells in the figure
 
 #eliminiamo i pnti e gli spigoli interni

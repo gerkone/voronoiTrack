@@ -20,7 +20,7 @@ class Vor:
         self.vertices = []
         self.seed = seed
         random.seed(self.seed)
-        simple_log(datetime.now().strftime("[%d/%m/%Y %H:%M:%S"]) + " " + str(seed) + "\n")
+        simple_log(datetime.now().strftime("[%d/%m/%Y %H:%M:%S]") + " " + str(seed) + "\n")
         randx = random.sample(range(boundary.x+1),npoints)  #random xs no repetition
         randy = random.sample(range(boundary.y+1),npoints)  #random ys no repetition
         for i in range(npoints):

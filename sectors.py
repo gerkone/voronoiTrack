@@ -18,7 +18,7 @@ class Straight:
     def setNextStraight(self, next):
         self.nextStraight = next.id
 
-    def setPreviousSTraight(self, previous):
+    def setPreviousStraight(self, previous):
         self.previousStraight = previous.id
 
 class Corner:
@@ -34,18 +34,24 @@ class Corner:
     #arcStart = calc
     #arcFInish = calc
 
-    def __init__(self, x, y, previous, next):
+    def __init__(self, x, y):
         self.id = generator.uuid1().int
         self.x = x
         self.y = y
-        self.previousStraight = previous.id
-        self.nextStraight = next.id
+        self.previousStraight = None
+        self.nextStraight = None
         self.spline = False
         self.blend = False
         self.radius = None
         self.center = None
         self.arcStart = None
         self.arcFInish = None
+
+    def setPreviousStraight(self, previous):
+        self.previousStraight = previous.id
+
+    def setNextStraight(self, next):
+        self.nextStraight = next.id
 
     def flagSpline(self):
         self.spline = True
