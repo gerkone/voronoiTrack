@@ -3,6 +3,7 @@ import scipy
 import math
 from collections import deque
 import matplotlib.pyplot as plt
+import json
 
 from voronoi import *
 from utils import *
@@ -22,8 +23,8 @@ class Track:
             if(el._is_out_of_bounds(self.boundary)):
                 self.figure.delete_element(el, False)
         self.figure.cleanup()
-        self.straights = []
-        self.corners = []
+        self.straights = deque()
+        self.corners = deque()
 
     def _element(self, ID):
         if ID is None:
@@ -35,6 +36,7 @@ class Track:
         element = get_by_ID(ID, self.corners)
         if element is not None:
             return element
+        print("Found nothing")
         return None
 
     def select_bfs(self, perc):
@@ -101,6 +103,48 @@ class Track:
             t0 = t1
         self.corners.append(t1)
         self.straights.append(Straight(t1,self.corners[0]))
+        # for v in sorted_vertices:
+        #     self.corners.append(Corner(v.x,v.y))
+        # for i in range(len(self.corners)):
+        #     self.straights.append(Straight(self.corners[-1], self.corners[0]))
+        #     self.corners.rotate(-1)
+
+        for i in range(len(self.straights)):
+            self.straights[0].setPreviousStraight(self.straights[-1])
+            self.straights[0].setNextStraight(self.straights[1])
+            self.straights.rotate(1)
+            self.corners[0].setPreviousStraight(self.straights[-1])
+            self.corners[0].setNextStraight(self.straights[0])
+            self.corners.rotate(1)
+
+    def avg_straight_length(self):
+        return sum([distance(self._element(s.startNode), self._element(s.endNode)) for s in self.straights])/len(self.straights)
+
+    def starting_line(self):
+        max_straight = max(self.straights, key=lambda s : distance(self._element(s.startNode), self._element(s.endNode))).id
+        while self.straights[0].id != max_straight:
+            self.straights.rotate(1)
+            self.corners.rotate(1)
+        self.straights[0].flagStart()
+
+    def flag_dense_corners(self, tol=0.6, min_p=2):
+        min_d = tol*self.avg_straight_length()
+        i = 0
+        while i < len(self.straights):
+            group_spline = []
+            id_ls = generator.uuid1().int
+            s = self.straights[i]
+            while(distance(self._element(s.startNode), self._element(s.endNode)) < min_d):
+                group_spline.append(s)
+                i = i + 1
+                s = self.straights[i]
+            else:
+                i = i + 1
+            if len(group_spline) > min_p:
+                for s in group_spline:
+                    s.flagSpline(id_ls)
+
+
 
     # def plot_out(self):
     #     ext = self.figure._filter_outside_edges()
@@ -121,8 +165,9 @@ class Track:
             v1 = self._element(e.startNode)
             v2 = self._element(e.endNode)
             plt.plot([v1.x, v2.x], [v1.y, v2.y], c="k", lw=1)
-            # label1 = "start"
-            # plt.annotate(label1,[v1.x, v1.y], textcoords="offset points", xytext=(0,10), ha='center')
+            if v1.spline:
+                label1 = str(v1.spline)
+                plt.annotate(label1,[v1.x, v1.y], textcoords="offset points", xytext=(0,10), ha='center')
         if points is not None:
             plt.plot([p[0] for p in points], [p[1] for p in points], c="r")
         plt.show()
@@ -170,14 +215,18 @@ class Track:
         corner.arcFInish = T2
         corner.flagBlend()
 
-track = Track([100,100],70, 4157130646)#rand.randint(0,2**32-1))
+track = Track([100,100],70, rand.randint(0,2**32-1))
 track.select(0.5)
 # track.figure.plot(boundary = track.boundary)
-print(str(len(track.straights)))
 print(str(len(track.corners)))
-ofst = offset(track.corners, 3.2)
-print(str(ofst))
-track.plot_out(ofst[0])
+print(str([str(s) for s in track.corners]))
+print(str(len(track.straights)))
+print(str([str(s) for s in track.straights]))
+
+
+track.starting_line()
+track.flag_dense_corners()
+track.plot_out(track.corners)
 
 # track.plot_fill()
 
