@@ -90,16 +90,17 @@ class Track:
             track_cell.connect_edge(e)
         sorted_edges, sorted_vertices = self.figure.sort(track_cell)
 
-        # t1 = Corner(sorted_vertices[-1].x,sorted_vertices[-1].y)
-        # t0 = Corner(sorted_vertices[0].x,sorted_vertices[0].y)
-        # self.corners.append(t1)
-        # self.straights.append(Straight(t1,t0))
-        # for i in range(1, len(sorted_edges)-1):
-        #     t1 = Corner(sorted_vertices[i].x,sorted_vertices[i].y)
-        #     self.corners.append(t0)
-        #     self.straights.append(Straight(t0,t1))
-        #     t0 = t1
-        # self.straights.append(Straight(t1,self.corners[0]))
+        t1 = Corner(sorted_vertices[-1].x,sorted_vertices[-1].y)
+        t0 = Corner(sorted_vertices[0].x,sorted_vertices[0].y)
+        self.corners.append(t1)
+        self.straights.append(Straight(t1,t0))
+        for i in range(1, len(sorted_edges)-1):
+            t1 = Corner(sorted_vertices[i].x,sorted_vertices[i].y)
+            self.corners.append(t0)
+            self.straights.append(Straight(t0,t1))
+            t0 = t1
+        self.corners.append(t1)
+        self.straights.append(Straight(t1,self.corners[0]))
 
     # def plot_out(self):
     #     ext = self.figure._filter_outside_edges()
@@ -112,16 +113,18 @@ class Track:
     #     plt.show()
 
 
-    def plot_out(self):
+    def plot_out(self, points=None):
         ext = self.straights
         plt.xlim(left=self.boundary._x_min(), right=self.boundary._x_max())
         plt.ylim(bottom=self.boundary._y_min(), top=self.boundary._y_max())
         for e in ext:
             v1 = self._element(e.startNode)
             v2 = self._element(e.endNode)
-            plt.plot([v1.x, v2.x], [v1.y, v2.y], "k", lw=1)
-            label1 = "start"
-            plt.annotate(label1,[v1.x, v1.y], textcoords="offset points", xytext=(0,10), ha='center')
+            plt.plot([v1.x, v2.x], [v1.y, v2.y], c="k", lw=1)
+            # label1 = "start"
+            # plt.annotate(label1,[v1.x, v1.y], textcoords="offset points", xytext=(0,10), ha='center')
+        if points is not None:
+            plt.plot([p[0] for p in points], [p[1] for p in points], c="r")
         plt.show()
 
     def plot_fill(self):
@@ -143,7 +146,7 @@ class Track:
         m2 = float(B.y-C.y)/float(B.x-C.x)
         l1 = distance(A, B)
         l2 = distance(B, C)
-        alfa = math.acos(((B.x-A.x)*(B.x-C.x)+(B.y-A.y)*(B.y-C.y))/float(l1*l2))
+        alfa = angle_3_points(A,B,C)
         r = f*math.tan(alfa/2.0)*min(l1, l2)
         t = r/math.tan(alfa/2.0)
         costan = lambda x: math.cos(math.atan(x))
@@ -153,13 +156,13 @@ class Track:
         elif A.x < B.x:
             T1 = [B.x-t*tcostan(m1), B.y-t*sintan(m2)]
         else:
-            raise Exception("Two consecutive points where aligned vertically")
+            raise Exception("Two consecutive points were aligned vertically")
         if C.x > B.x:
             T2 = [B.x+t*costan(m2), B.y+t*sintan(m1)]
         elif C.x < B.x:
             T2 = [B.x-t*costan(m2), B.y-t*sintan(m1)]
         else:
-            raise Exception("Two consecutive points where aligned vertically")
+            raise Exception("Two consecutive points were aligned vertically")
         C = [float(m2*T1[0] + m1*m2*T1[1] - m1*T2[x] - m1*m2*T2[1])/float(m2-m1), float(T2[0]+m2*T2[1] - T1[0] - m1*T1[0])/float(m2-m1)]
         corner.radius = r
         corner.center = C
@@ -167,15 +170,16 @@ class Track:
         corner.arcFInish = T2
         corner.flagBlend()
 
-track = Track([100,100],70,rand.randint(0,2**32-1))
+track = Track([100,100],70, 4157130646)#rand.randint(0,2**32-1))
 track.select(0.5)
 # track.figure.plot(boundary = track.boundary)
 print(str(len(track.straights)))
 print(str(len(track.corners)))
-track.plot_out()
+ofst = offset(track.corners, 3.2)
+print(str(ofst))
+track.plot_out(ofst[0])
+
 # track.plot_fill()
-
-
 
 #select a percentage of the cells in the figure
 
