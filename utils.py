@@ -1,4 +1,4 @@
-import pyclipper
+# import pyclipper
 import math
 
 def distance(q1,q2):
@@ -31,7 +31,7 @@ def angle_3_points(A, B, C):
 	l2 = distance(B, C)
 	return math.acos(((B.x-A.x)*(B.x-C.x)+(B.y-A.y)*(B.y-C.y))/float(l1*l2))
 
-def offset(points, offset):
-	pco = pyclipper.PyclipperOffset()
-	pco.AddPath([[p.x, p.y] for p in points], pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
-	return pco.Execute(offset)
+# def offset(points, offset):
+# 	pco = pyclipper.PyclipperOffset()
+# 	pco.AddPath([[p.x, p.y] for p in points], pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
+# 	return pco.Execute(offset)

@@ -1,5 +1,6 @@
 import numpy as np
 
+# credit to https://github.com/vmichals
 def catmull_rom_one_point(x, v0, v1, v2, v3):
     """Computes interpolated y-coord for given x-coord using Catmull-Rom.
     Computes an interpolated y-coordinate for the given x-coordinate between
