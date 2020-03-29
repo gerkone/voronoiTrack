@@ -8,6 +8,7 @@ import json
 from voronoi import *
 from utils import *
 from sectors import *
+from catmull import *
 
 BOUNDARY_DEFAULT_SCALE = 0.1
 
@@ -42,7 +43,7 @@ class Track:
 
     def select_bfs(self, perc):
         """
-        Acts as a breath first visit and adds new cells to the selected area
+        Acts as a breadth first visit and adds new cells to the selected area
         starting from a random cell. (deprecated)
         """
         areaTot = sum([self.figure._area(c) for c in list(self.figure.cells.values())])
@@ -86,14 +87,21 @@ class Track:
             convex.add_points([p])
         convex.close()
         #scans for vertices inside the hull
+        v_counter = 0
         for v in self.figure.vertices.values():
             if in_hull([[v.x,v.y]], [convex.points[i] for i in convex.vertices])[0]:
+                v_counter = v_counter + 1
                 for c in v.cells:
                     (self.figure.cells.get(c)).flag_selected()
+        if v_counter < 1:
+            return False
+        return True
 
     def select(self, perc, method = "hull", n = 5):
         if method == "hull":
-            self.select_by_hull(perc, n)
+            #repeat until no cell is selected
+            while not self.select_by_hull(perc, n):
+                pass
         else:
             self.select_bfs(perc)
         vertices = []
@@ -108,7 +116,6 @@ class Track:
         for e in out_edges:
             track_cell.connect_edge(e)
         sorted_edges, sorted_vertices = self.figure.sort(track_cell)
-
         t1 = Corner(sorted_vertices[-1].x,sorted_vertices[-1].y)
         t0 = Corner(sorted_vertices[0].x,sorted_vertices[0].y)
         self.corners.append(t1)
@@ -127,11 +134,12 @@ class Track:
             self.corners[0].setPreviousStraight(self.straights[-1])
             self.corners[0].setNextStraight(self.straights[0])
             self.corners.rotate(1)
+
     def avg_straight_length(self):
-        return sum([distance(self._element(s.startNode), self._element(s.endNode)) for s in self.straights])/len(self.straights)
+        return sum([distance(self._element(s.start_node), self._element(s.end_node)) for s in self.straights])/len(self.straights)
 
     def starting_line(self):
-        max_straight = max(self.straights, key=lambda s : distance(self._element(s.startNode), self._element(s.endNode))).id
+        max_straight = max(self.straights, key=lambda s : distance(self._element(s.start_node), self._element(s.end_node))).id
         # scans the queue and sets the first straight as the start
         while self.straights[0].id != max_straight:
             self.straights.rotate(1)
@@ -145,22 +153,22 @@ class Track:
         tol: tolerance relative to the average straight length as minimum distance between corners to be splined
         min_p: minumum corners to be found grouped
         """
-        min_d = tol*self.avg_straight_length()
+        max_d = tol*self.avg_straight_length()
         i = 0
         while i < len(self.corners):
-            next_straight = self._element(self.corners[i].nextStraight)
+            next_straight = self._element(self.corners[i].next_straight)
             # saving current state
             c = i
-            while distance(self._element(next_straight.startNode), self._element(next_straight.endNode)) < min_d:
+            while distance(self._element(next_straight.start_node), self._element(next_straight.end_node)) < max_d:
                 if i + 1 >= len(self.corners):
                     i = i + 1
                     break
                 # the found corners are more than the minimum target (+1 because two corners for each straight)
                 if i + 1 - c >= min_p:
-                    self._element(next_straight.startNode).flagSpline()
-                    self._element(next_straight.endNode).flagSpline()
+                    self._element(next_straight.start_node).flagSpline()
+                    self._element(next_straight.end_node).flagSpline()
                 i = i + 1
-                next_straight = self._element(self.corners[i].nextStraight)
+                next_straight = self._element(self.corners[i].next_straight)
             else:
                 i = i + 1
 
@@ -169,18 +177,14 @@ class Track:
         plt.xlim(left=self.boundary._x_min(), right=self.boundary._x_max())
         plt.ylim(bottom=self.boundary._y_min(), top=self.boundary._y_max())
         for e in ext:
-            v1 = self._element(e.startNode)
-            v2 = self._element(e.endNode)
-            if distance(v1,v2) < 0.6*self.avg_straight_length():
-                plt.plot([v1.x, v2.x], [v1.y, v2.y], c="r", lw=1)
-            else:
-                plt.plot([v1.x, v2.x], [v1.y, v2.y], c="k", lw=1)
-            if v1.spline:
-                plt.plot([v1.x, v2.x], [v1.y, v2.y], "ro", lw=1)
-                #label1 = str(v1.spline)
-                #plt.annotate(label1,[v1.x, v1.y], textcoords="offset points", xytext=(0,10), ha='center')
-            else:
-                plt.plot([v1.x, v2.x], [v1.y, v2.y], "ko", lw=1)
+            v1 = self._element(e.start_node)
+            v2 = self._element(e.end_node)
+            plt.plot([v1.x, v2.x], [v1.y, v2.y], c="r", lw=1)
+            plt.plot([q[0] for q in v1.arc_points],[q[1] for q in v1.arc_points], c="go")
+            # if v1.spline:
+            #     plt.plot([v1.x, v2.x], [v1.y, v2.y], "ro", lw=1)
+            # else:
+            #     plt.plot([v1.x, v2.x], [v1.y, v2.y], "ko", lw=1)
         plt.show()
 
     def plot_fill(self):
@@ -195,9 +199,13 @@ class Track:
             f = 1-previous_f
         else:
             f = random.uniform(0.1, 0.5)
-        A = self._element(self._element(corner.previousStraight).startNode)
-        B = corners
-        C = self._element(self._element(corner.nextStraight).endNode)
+        A = self._element(self._element(corner.prev_straight).start_node)
+        B = corner
+        C = self._element(self._element(corner.next_straight).end_node)
+        print("Circle factor: " +str(f))
+        print("Ax: "+str(A.x)+", Ay: "+str(A.y))
+        print("Bx: "+str(B.x)+", By: "+str(B.y))
+        print("Cx: "+str(C.x)+", Cy: "+str(C.y))
         m1 = float(B.y-A.y)/float(B.x-A.x)
         m2 = float(B.y-C.y)/float(B.x-C.x)
         l1 = distance(A, B)
@@ -210,7 +218,7 @@ class Track:
         if A.x > B.x:
             T1 = [B.x+t*costan(m1), B.y+t*sintan(m2)]
         elif A.x < B.x:
-            T1 = [B.x-t*tcostan(m1), B.y-t*sintan(m2)]
+            T1 = [B.x-t*costan(m1), B.y-t*sintan(m2)]
         else:
             raise Exception("Two consecutive points were aligned vertically")
         if C.x > B.x:
@@ -219,18 +227,26 @@ class Track:
             T2 = [B.x-t*costan(m2), B.y-t*sintan(m1)]
         else:
             raise Exception("Two consecutive points were aligned vertically")
-        C = [float(m2*T1[0] + m1*m2*T1[1] - m1*T2[x] - m1*m2*T2[1])/float(m2-m1), float(T2[0]+m2*T2[1] - T1[0] - m1*T1[0])/float(m2-m1)]
+        C = [float(m2*T1[0] + m1*m2*T1[1] - m1*T2[0] - m1*m2*T2[1])/float(m2-m1), float(T2[0]+m2*T2[1] - T1[0] - m1*T1[0])/float(m2-m1)]
         corner.radius = r
         corner.center = C
-        corner.arcStart = T1
-        corner.arcFInish = T2
+        corner.arc_start = T1
+        corner.arc_finish = T2
         corner.flagBlend()
+        # print(corner.radius)
+        # print(str(corner.center))
+        # print(str(corner.arc_start))
+        # print(str(corner.arc_finish))
 
-track = Track([100,100],70,rand.randint(0,2**32-1))
+track = Track([100,100],70, rand.randint(0,2**32-1)) # 211560145) #rand.randint(0,2**32-1))
 track.select(0.5)
-track.figure.plot(boundary = track.boundary)
+# track.figure.plot(boundary = track.boundary)
 
-track.starting_line()
-track.flag_dense_corners()
+# track.starting_line()
+# track.flag_dense_corners()
+s_x, s_y = catmull_rom([c.x for c in track.corners], [c.y for c in track.corners], 70)
+plt.plot(s_x,s_y)
+# for c in track.corners:
+#     track.round(c)
 track.plot_out()
 #track.plot_fill()

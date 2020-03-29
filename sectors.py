@@ -1,5 +1,7 @@
 import uuid as generator
 
+ANGLE_RES = 20 #resolution for the rounded corners
+
 class Straight:
 
     #id
@@ -10,25 +12,25 @@ class Straight:
 
     def __init__(self, start, end):
         self.id = generator.uuid1().int
-        self.startNode = start.id
-        self.endNode = end.id
-        self.nextStraight = None
-        self.previousStraight = None
-        self.isStart = False
-        self.startPerc = None
+        self.start_node = start.id
+        self.end_node = end.id
+        self.next_straight = None
+        self.prev_straight = None
+        self.is_start = False
+        self.start_perc = None
 
     def setNextStraight(self, next):
-        self.nextStraight = next.id
+        self.next_straight = next.id
 
     def setPreviousStraight(self, previous):
-        self.previousStraight = previous.id
+        self.prev_straight = previous.id
 
     def flagStart(self, startPerc=0.5):
-        self.isStart = True
-        self.startPerc = startPerc
+        self.is_start = True
+        self.start_perc = startPerc
 
     def __str__(self):
-        return ("startNode: " +str(self.startNode)+"\n endNode: " +str(self.endNode)+ "\n")
+        return ("startNode: " +str(self.start_node)+"\n endNode: " +str(self.end_node)+ "\n")
 
 class Corner:
 
@@ -42,25 +44,28 @@ class Corner:
     #center = calc
     #arcStart = calc
     #arcFInish = calc
+    #arc_points = []
 
     def __init__(self, x, y):
         self.id = generator.uuid1().int
         self.x = x
         self.y = y
-        self.previousStraight = None
-        self.nextStraight = None
+        self.prev_straight = None
+        self.next_straight = None
         self.spline = False
         self.blend = False
         self.radius = None
         self.center = None
-        self.arcStart = None
-        self.arcFInish = None
+        self.arc_start = None
+        self.arc_finish = None
+        #array of coordinates for the circle
+        self.arc_points = []
 
     def setPreviousStraight(self, previous):
-        self.previousStraight = previous.id
+        self.prev_straight = previous.id
 
     def setNextStraight(self, next):
-        self.nextStraight = next.id
+        self.next_straight = next.id
 
     def flagSpline(self):
         self.spline = True
@@ -70,3 +75,19 @@ class Corner:
 
     def __str__(self):
         return ("id: " +str(self.id)+ "\n")
+
+    def _angle_of(t):
+        alpha = math.degrees(math.atan((t[1] - self.center[1])/(t[0] - self.center[0])))
+        if alpha < 0:
+            alpha = alpha + 180
+
+    def roundify(self):
+        if blend != None and arc_start != None and arc_finish != None:
+            circle = lambda b : [self.center[0]+self.radius*math.cos(b), self.center[1]+self.radius*math.sin(b)]
+            start_angle = _angle_of(self.arc_start)
+            end_angle = _angle_of(self.arc_end)
+            steps = np.linspace(start_angle, end_angle, ANGLE_RES)
+            for t in steps:
+                arc_points.append(circle(t))
+        else:
+            return

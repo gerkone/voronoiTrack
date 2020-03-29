@@ -2,7 +2,8 @@ import numpy as np
 
 # credit to https://github.com/vmichals
 def catmull_rom_one_point(x, v0, v1, v2, v3):
-    """Computes interpolated y-coord for given x-coord using Catmull-Rom.
+    """
+    Computes interpolated y-coord for given x-coord using Catmull-Rom.
     Computes an interpolated y-coordinate for the given x-coordinate between
     the support points v1 and v2. The neighboring support points v0 and v3 are
     used by Catmull-Rom to ensure a smooth transition between the spline
@@ -21,7 +22,8 @@ def catmull_rom_one_point(x, v0, v1, v2, v3):
     return (((c4 * x + c3) * x + c2) * x + c1)
 
 def catmull_rom(p_x, p_y, res):
-    """Computes Catmull-Rom Spline for given support points and resolution.
+    """
+    Computes Catmull-Rom Spline for given support points and resolution.
     Args:
         p_x: array of x-coords
         p_y: array of y-coords
