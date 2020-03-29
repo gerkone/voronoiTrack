@@ -81,7 +81,9 @@ class Track:
         convex = scipy.spatial.ConvexHull(figurePoints, incremental=True)
         #add n vertices to the hull
         while len(convex.vertices) < n:
-            convex.add_points([randPoint()])
+            p = randPoint()
+            figurePoints.append(p)
+            convex.add_points([p])
         convex.close()
         #scans for vertices inside the hull
         for v in self.figure.vertices.values():
@@ -94,7 +96,6 @@ class Track:
             self.select_by_hull(perc, n)
         else:
             self.select_bfs(perc)
-
         vertices = []
         out_edges = self.figure._filter_outside_edges()
         for e in out_edges:
@@ -126,33 +127,42 @@ class Track:
             self.corners[0].setPreviousStraight(self.straights[-1])
             self.corners[0].setNextStraight(self.straights[0])
             self.corners.rotate(1)
-
     def avg_straight_length(self):
         return sum([distance(self._element(s.startNode), self._element(s.endNode)) for s in self.straights])/len(self.straights)
 
     def starting_line(self):
         max_straight = max(self.straights, key=lambda s : distance(self._element(s.startNode), self._element(s.endNode))).id
+        # scans the queue and sets the first straight as the start
         while self.straights[0].id != max_straight:
             self.straights.rotate(1)
             self.corners.rotate(1)
         self.straights[0].flagStart()
 
-    def flag_dense_corners(self, tol=0.6, min_p=2):
+    def flag_dense_corners(self, tol=0.6, min_p=3):
+        """
+        the ways to choose between basic rounding and spline of corners is by grouping
+        corners close to one another and mark them for spline.
+        tol: tolerance relative to the average straight length as minimum distance between corners to be splined
+        min_p: minumum corners to be found grouped
+        """
         min_d = tol*self.avg_straight_length()
         i = 0
-        while i < len(self.straights):
-            group_spline = []
-            id_ls = generator.uuid1().int
-            s = self.straights[i]
-            while(distance(self._element(s.startNode), self._element(s.endNode)) < min_d):
-                group_spline.append(s)
+        while i < len(self.corners):
+            next_straight = self._element(self.corners[i].nextStraight)
+            # saving current state
+            c = i
+            while distance(self._element(next_straight.startNode), self._element(next_straight.endNode)) < min_d:
+                if i + 1 >= len(self.corners):
+                    i = i + 1
+                    break
+                # the found corners are more than the minimum target (+1 because two corners for each straight)
+                if i + 1 - c >= min_p:
+                    self._element(next_straight.startNode).flagSpline()
+                    self._element(next_straight.endNode).flagSpline()
                 i = i + 1
-                s = self.straights[i]
+                next_straight = self._element(self.corners[i].nextStraight)
             else:
                 i = i + 1
-            if len(group_spline) > min_p:
-                for s in group_spline:
-                    s.flagSpline(id_ls)
 
     def plot_out(self, points=None):
         ext = self.straights
@@ -161,12 +171,16 @@ class Track:
         for e in ext:
             v1 = self._element(e.startNode)
             v2 = self._element(e.endNode)
-            plt.plot([v1.x, v2.x], [v1.y, v2.y], c="k", lw=1)
+            if distance(v1,v2) < 0.6*self.avg_straight_length():
+                plt.plot([v1.x, v2.x], [v1.y, v2.y], c="r", lw=1)
+            else:
+                plt.plot([v1.x, v2.x], [v1.y, v2.y], c="k", lw=1)
             if v1.spline:
-                label1 = str(v1.spline)
-                plt.annotate(label1,[v1.x, v1.y], textcoords="offset points", xytext=(0,10), ha='center')
-        if points is not None:
-            plt.plot([p[0] for p in points], [p[1] for p in points], c="r")
+                plt.plot([v1.x, v2.x], [v1.y, v2.y], "ro", lw=1)
+                #label1 = str(v1.spline)
+                #plt.annotate(label1,[v1.x, v1.y], textcoords="offset points", xytext=(0,10), ha='center')
+            else:
+                plt.plot([v1.x, v2.x], [v1.y, v2.y], "ko", lw=1)
         plt.show()
 
     def plot_fill(self):
@@ -212,11 +226,11 @@ class Track:
         corner.arcFInish = T2
         corner.flagBlend()
 
-track = Track([100,100],70, rand.randint(0,2**32-1))
+track = Track([100,100],70,rand.randint(0,2**32-1))
 track.select(0.5)
 track.figure.plot(boundary = track.boundary)
 
-# track.starting_line()
-# track.flag_dense_corners()
-# track.plot_out(track.corners)
-track.plot_fill()
+track.starting_line()
+track.flag_dense_corners()
+track.plot_out()
+#track.plot_fill()

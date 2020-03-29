@@ -49,7 +49,7 @@ class Corner:
         self.y = y
         self.previousStraight = None
         self.nextStraight = None
-        self.spline = None
+        self.spline = False
         self.blend = False
         self.radius = None
         self.center = None
@@ -62,8 +62,8 @@ class Corner:
     def setNextStraight(self, next):
         self.nextStraight = next.id
 
-    def flagSpline(self,id):
-        self.spline = id
+    def flagSpline(self):
+        self.spline = True
 
     def flagBlend(self):
         self.blend = True
