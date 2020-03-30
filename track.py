@@ -130,9 +130,9 @@ class Track:
         for i in range(len(self.straights)):
             self.straights[0].setPreviousStraight(self.straights[-1])
             self.straights[0].setNextStraight(self.straights[1])
-            self.straights.rotate(1)
             self.corners[0].setPreviousStraight(self.straights[-1])
             self.corners[0].setNextStraight(self.straights[0])
+            self.straights.rotate(1)
             self.corners.rotate(1)
 
     def avg_straight_length(self):
@@ -172,19 +172,31 @@ class Track:
             else:
                 i = i + 1
 
-    def plot_out(self, points=None):
+    def plot_out(self, points=None, orderedCorners=False, orderedStraights = False):
         ext = self.straights
         plt.xlim(left=self.boundary._x_min(), right=self.boundary._x_max())
         plt.ylim(bottom=self.boundary._y_min(), top=self.boundary._y_max())
+        if orderedCorners:
+            i = 0
+            for c in self.corners:
+                label = str(i)
+                c.id2 = i
+                plt.annotate(label, (c.x, c.y))
+                i = i + 1
+        j = 0
         for e in ext:
             v1 = self._element(e.start_node)
             v2 = self._element(e.end_node)
             plt.plot([v1.x, v2.x], [v1.y, v2.y], c="r", lw=1)
             plt.plot([q[0] for q in v1.arc_points],[q[1] for q in v1.arc_points], c="go")
-            # if v1.spline:
-            #     plt.plot([v1.x, v2.x], [v1.y, v2.y], "ro", lw=1)
-            # else:
-            #     plt.plot([v1.x, v2.x], [v1.y, v2.y], "ko", lw=1)
+            if orderedStraights:
+                label = str(j)
+                plt.annotate(label, ((v1.x + v2.x)/2., (v1.y + v2.y)/2.))
+                j = j + 1
+                # if v1.spline:
+                #     plt.plot([v1.x, v2.x], [v1.y, v2.y], "ro", lw=1)
+                # else:
+                #     plt.plot([v1.x, v2.x], [v1.y, v2.y], "ko", lw=1)
         plt.show()
 
     def plot_fill(self):
@@ -198,55 +210,45 @@ class Track:
         if previous_f and previous_f > 0.1:
             f = 1-previous_f
         else:
-            f = random.uniform(0.1, 0.5)
+            f = random.uniform(0.3, 0.5)
         A = self._element(self._element(corner.prev_straight).start_node)
         B = corner
         C = self._element(self._element(corner.next_straight).end_node)
-        print("Circle factor: " +str(f))
-        print("Ax: "+str(A.x)+", Ay: "+str(A.y))
-        print("Bx: "+str(B.x)+", By: "+str(B.y))
-        print("Cx: "+str(C.x)+", Cy: "+str(C.y))
         m1 = float(B.y-A.y)/float(B.x-A.x)
         m2 = float(B.y-C.y)/float(B.x-C.x)
         l1 = distance(A, B)
         l2 = distance(B, C)
         alfa = angle_3_points(A,B,C)
         r = f*math.tan(alfa/2.0)*min(l1, l2)
-        t = r/math.tan(alfa/2.0)
+        t = float(r)/float(math.tan(alfa/2.0))
         costan = lambda x: math.cos(math.atan(x))
         sintan = lambda x: math.sin(math.atan(x))
         if A.x > B.x:
-            T1 = [B.x+t*costan(m1), B.y+t*sintan(m2)]
+            T1 = [B.x+t*costan(m1), B.y+t*sintan(m1)]
         elif A.x < B.x:
-            T1 = [B.x-t*costan(m1), B.y-t*sintan(m2)]
+            T1 = [B.x-t*costan(m1), B.y-t*sintan(m1)]
         else:
             raise Exception("Two consecutive points were aligned vertically")
         if C.x > B.x:
-            T2 = [B.x+t*costan(m2), B.y+t*sintan(m1)]
+            T2 = [B.x+t*costan(m2), B.y+t*sintan(m2)]
         elif C.x < B.x:
-            T2 = [B.x-t*costan(m2), B.y-t*sintan(m1)]
+            T2 = [B.x-t*costan(m2), B.y-t*sintan(m2)]
         else:
             raise Exception("Two consecutive points were aligned vertically")
-        C = [float(m2*T1[0] + m1*m2*T1[1] - m1*T2[0] - m1*m2*T2[1])/float(m2-m1), float(T2[0]+m2*T2[1] - T1[0] - m1*T1[0])/float(m2-m1)]
+        C = [float(m2*T1[0] + m1*m2*T1[1] - m1*T2[0] - m1*m2*T2[1])/float(m2-m1), float(T2[0]+m2*T2[1] - T1[0] - m1*T1[1])/float(m2-m1)]
         corner.radius = r
         corner.center = C
         corner.arc_start = T1
         corner.arc_finish = T2
         corner.flagBlend()
-        # print(corner.radius)
-        # print(str(corner.center))
-        # print(str(corner.arc_start))
-        # print(str(corner.arc_finish))
 
 track = Track([100,100],70, rand.randint(0,2**32-1)) # 211560145) #rand.randint(0,2**32-1))
 track.select(0.5)
 # track.figure.plot(boundary = track.boundary)
-
-# track.starting_line()
-# track.flag_dense_corners()
-s_x, s_y = catmull_rom([c.x for c in track.corners], [c.y for c in track.corners], 70)
-plt.plot(s_x,s_y)
-# for c in track.corners:
-#     track.round(c)
-track.plot_out()
+track.starting_line()
+track.flag_dense_corners()
+# print(str([c.x for c in track.corners]))
+for c in track.corners:
+    track.round(c)
+track.plot_out(orderedCorners = True, orderedStraights = True)
 #track.plot_fill()
