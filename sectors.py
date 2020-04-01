@@ -86,24 +86,25 @@ class Corner:
             return 360 - (- t%360)
 
     def _angle_of(self,t):
-        return self._mod360(math.degrees(math.atan((t[1] - self.center[1])/(t[0] - self.center[0]))))
+        a = math.degrees(math.atan((t[1] - self.center[1])/(t[0] - self.center[0])))
+        if a < 0:
+            a = a +180
+        return self._mod360(a)
 
     def roundify(self):
         if self.blend and self.arc_start != None and self.arc_finish != None:
             circle_coords = lambda b : [self.center[0]+self.radius*math.cos(math.radians(b)), self.center[1]+self.radius*math.sin(math.radians(b))]
             start_angle = self._mod360(self._angle_of(self.arc_start))
+            #end angle non viene calcolato bene
             end_angle = self._mod360(self._angle_of(self.arc_finish))
             theta = math.degrees(angle_3_points(self.arc_start,self.center,self.arc_finish))
             angle_steps = []
-            print(abs(self._mod360(start_angle + theta) - end_angle))
-            print(abs(self._mod360(start_angle - theta) - end_angle))
-            print("----")
             if abs(self._mod360(start_angle + theta) - end_angle) < abs(self._mod360(start_angle - theta) - end_angle):
                 step = ANGLE_RES
             else:
                 step = -ANGLE_RES
             a = start_angle
-            while abs(a - end_angle) > ANGLE_RES:
+            while self._mod360(a - end_angle) > ANGLE_RES:
                 a = self._mod360(a + step)
                 angle_steps.append(a)
             if end_angle in angle_steps:
