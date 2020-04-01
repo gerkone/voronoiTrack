@@ -2,7 +2,11 @@
 import math
 
 def distance(q1,q2):
-	return ((q1.x - q2.x)**2 + (q1.y - q2.y)**2)**0.5
+	if hasattr(q1,"x") and hasattr(q2,"x"):
+		x1,x2,y1,y2 = q1.x,q2.x,q1.y,q2.y
+	else:
+		x1,x2,y1,y2 = q1[0],q2[0],q1[1],q2[1]
+	return ((x1 - x2)**2 + (y1 - y2)**2)**0.5
 
 def intersect(L1,L2):
 	t = set(L2)
@@ -29,7 +33,11 @@ def in_hull(p, hull):
 def angle_3_points(A, B, C):
 	l1 = distance(A, B)
 	l2 = distance(B, C)
-	return math.acos(((B.x-A.x)*(B.x-C.x)+(B.y-A.y)*(B.y-C.y))/float(l1*l2))
+	if hasattr(A,"x") and hasattr(B,"x") and hasattr(C,"x"):
+		x1,x2,x3,y1,y2,y3 = A.x,B.x,C.x,A.y,B.y,C.y
+	else:
+		x1,x2,x3,y1,y2,y3 = A[0],B[0],C[0],A[1],B[1],C[1]
+	return (math.acos(((x2-x1)*(x2-x3)+(y2-y1)*(y2-y3))/float(l1*l2)))
 
 # def offset(points, offset):
 # 	pco = pyclipper.PyclipperOffset()

@@ -188,7 +188,7 @@ class Track:
             v1 = self._element(e.start_node)
             v2 = self._element(e.end_node)
             plt.plot([v1.x, v2.x], [v1.y, v2.y], c="r", lw=1)
-            plt.plot([q[0] for q in v1.arc_points],[q[1] for q in v1.arc_points], c="go")
+            plt.plot([q[0] for q in v1.arc_points],[q[1] for q in v1.arc_points], c="g")
             if orderedStraights:
                 label = str(j)
                 plt.annotate(label, ((v1.x + v2.x)/2., (v1.y + v2.y)/2.))
@@ -241,6 +241,7 @@ class Track:
         corner.arc_start = T1
         corner.arc_finish = T2
         corner.flagBlend()
+        corner.roundify()
 
 track = Track([100,100],70, rand.randint(0,2**32-1)) # 211560145) #rand.randint(0,2**32-1))
 track.select(0.5)
