@@ -21,6 +21,7 @@ class Track:
         self.straights = deque()
         self.corners = deque()
 
+        random.seed(seed)
         self.boundary = Boundary(boundary[0],boundary[1], scale)
         self.figure = Vor(npoints, self.boundary, seed)
         for v_key in self.figure.vertices.keys():
@@ -243,7 +244,7 @@ class Track:
         corner.flagBlend()
         corner.roundify()
 
-track = Track([100,100],70, rand.randint(0,2**32-1)) # 211560145) #rand.randint(0,2**32-1))
+track = Track([100,100],70, 326297323) #rand.randint(0,2**32-1)) # 211560145) #rand.randint(0,2**32-1))
 track.select(0.5)
 # track.figure.plot(boundary = track.boundary)
 track.starting_line()

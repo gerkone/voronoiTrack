@@ -1,9 +1,10 @@
 import uuid as generator
+import numpy as np
 import math
 
 from utils import angle_3_points
 
-ANGLE_RES = 5 #resolution for the rounded corners
+ANGLE_RES = 50 #resolution for the rounded corners
 
 class Straight:
 
@@ -83,32 +84,57 @@ class Corner:
         if t > 0:
             return t%360
         else:
-            return 360 - (- t%360)
+            return 360 - (-t%360)
 
-    def _angle_of(self,t):
-        a = math.degrees(math.atan((t[1] - self.center[1])/(t[0] - self.center[0])))
-        if a < 0:
-            a = a +180
-        return self._mod360(a)
+    def _mod180(self, t):
+        if t > 180:
+            print("before: " + str(t))
+            print("after: " + str(t%180 - 180))
+            return t%180 - 180
+        elif t < -180:
+            print("before: " + str(t))
+            print("after: " + str(t%(-180) + 180))
+            return t%(-180) + 180
+        else:
+            print(": " + str(t))
+            return t
+
+    def _angle_of(self,q):
+        #return math.degrees(math.atan((q[1] - self.center[1])/(q[0] - self.center[0])))
+        #engineer's method
+        dx = 10**-10
+        return math.degrees(angle_3_points(q,self.center, [self.center[0] + dx, self.center[1]]))
 
     def roundify(self):
         if self.blend and self.arc_start != None and self.arc_finish != None:
             circle_coords = lambda b : [self.center[0]+self.radius*math.cos(math.radians(b)), self.center[1]+self.radius*math.sin(math.radians(b))]
-            start_angle = self._mod360(self._angle_of(self.arc_start))
-            #end angle non viene calcolato bene
-            end_angle = self._mod360(self._angle_of(self.arc_finish))
-            theta = math.degrees(angle_3_points(self.arc_start,self.center,self.arc_finish))
-            angle_steps = []
-            if abs(self._mod360(start_angle + theta) - end_angle) < abs(self._mod360(start_angle - theta) - end_angle):
-                step = ANGLE_RES
+            start_angle = self._angle_of(self.arc_start)
+            end_angle = self._angle_of(self.arc_finish)
+            theta = math.degrees(angle_3_points(self.arc_start, self.center, self.arc_finish))
+
+            print("Center: "+str(self.center))
+            print("Radius: "+str(self.radius))
+            print("Start angle: " +str(start_angle))
+            print("End angle: " +str(end_angle))
+            print("Theta: " +str(theta))
+
+            plus = abs((start_angle+theta)%180 - end_angle)%180
+            minus = abs((start_angle-theta)%180 - end_angle)%180
+
+            anglespace = np.linspace(0, theta, num=ANGLE_RES, endpoint=False)
+
+            if plus < minus:
+                print("Choosing +")
+                s = -1
+            elif minus < plus:
+                print("Choosing -")
+                s = +1
             else:
-                step = -ANGLE_RES
-            a = start_angle
-            while self._mod360(a - end_angle) > ANGLE_RES:
-                a = self._mod360(a + step)
-                angle_steps.append(a)
-            if end_angle in angle_steps:
-                angle_steps.remove(end_angle)
-            self.arc_points = [circle_coords(b) for b in angle_steps]
+                s = 0
+            for b in anglespace:
+                p=circle_coords(start_angle + s*b)
+                self.arc_points.append(p)
+            self.arc_points.pop(0)
+            print("")
         else:
             return
