@@ -1,5 +1,14 @@
 # import pyclipper
 import math
+import numpy as np
+
+def sign(a):
+	if a > 0:
+		return 1
+	elif a < 0:
+		return -1
+	else:
+		return 0
 
 def distance(q1,q2):
 	if hasattr(q1,"x"):
@@ -50,6 +59,15 @@ def angle_3_points(A, B, C):
 	else:
 		x3,y3 = C[0],C[1]
 	return (math.acos(((x2-x1)*(x2-x3)+(y2-y1)*(y2-y3))/float(l1*l2)))
+
+def vecFromTo(S, E):
+    return [E[0]-S[0], E[1]-S[1]]
+
+def vecCrossProd(A, B):
+    return A[0]*B[1]-A[1]*B[0]
+
+def angleVec(V):
+    return math.degrees(np.arctan2(V[1],V[0]))%360
 
 # def offset(points, offset):
 # 	pco = pyclipper.PyclipperOffset()

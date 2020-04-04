@@ -2,7 +2,7 @@ import uuid as generator
 import numpy as np
 import math
 
-from utils import angle_3_points
+from utils import *
 
 ANGLE_RES = 50 #resolution for the rounded corners
 
@@ -80,59 +80,23 @@ class Corner:
     def __str__(self):
         return ("id: " +str(self.id)+ "\n")
 
-    def _mod360(self,t):
-        if t > 0:
-            return t%360
-        else:
-            return 360 - (-t%360)
-
-    def _mod180(self, t):
-        if t > 180:
-            print("before: " + str(t))
-            print("after: " + str(t%180 - 180))
-            return t%180 - 180
-        elif t < -180:
-            print("before: " + str(t))
-            print("after: " + str(t%(-180) + 180))
-            return t%(-180) + 180
-        else:
-            print(": " + str(t))
-            return t
-
-    def _angle_of(self,q):
-        #return math.degrees(math.atan((q[1] - self.center[1])/(q[0] - self.center[0])))
-        #engineer's method
-        dx = 10**-10
-        return math.degrees(angle_3_points(q,self.center, [self.center[0] + dx, self.center[1]]))
-
     def roundify(self):
         if self.blend and self.arc_start != None and self.arc_finish != None:
             circle_coords = lambda b : [self.center[0]+self.radius*math.cos(math.radians(b)), self.center[1]+self.radius*math.sin(math.radians(b))]
-            start_angle = self._angle_of(self.arc_start)
-            end_angle = self._angle_of(self.arc_finish)
-            theta = math.degrees(angle_3_points(self.arc_start, self.center, self.arc_finish))
+            vec_start = vecFromTo(self.center, self.arc_start)
+            vec_end = vecFromTo(self.center, self.arc_finish)
+            s = sign(vecCrossProd(vec_start, vec_end))
 
-            print("Center: "+str(self.center))
-            print("Radius: "+str(self.radius))
-            print("Start angle: " +str(start_angle))
-            print("End angle: " +str(end_angle))
-            print("Theta: " +str(theta))
-
-            plus = abs((start_angle+theta)%180 - end_angle)%180
-            minus = abs((start_angle-theta)%180 - end_angle)%180
-
+            angle_start = angleVec(vec_start)
+            angle_end = angleVec(vec_end)
+            theta = abs(angle_start-angle_end)
+            print("AS: "+str(angle_start))
+            print("AE: "+str(angle_end))
+            print("T: "+str(theta))
             anglespace = np.linspace(0, theta, num=ANGLE_RES, endpoint=False)
 
-            if plus < minus:
-                print("Choosing +")
-                s = -1
-            elif minus < plus:
-                print("Choosing -")
-                s = +1
-            else:
-                s = 0
             for b in anglespace:
-                p=circle_coords(start_angle + s*b)
+                p=circle_coords(angle_start + s*b)
                 self.arc_points.append(p)
             self.arc_points.pop(0)
             print("")
