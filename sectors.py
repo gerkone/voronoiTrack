@@ -99,17 +99,11 @@ class Corner:
             print(": " + str(t))
             return t
 
-    def _angle_of(self,q):
-        #return math.degrees(math.atan((q[1] - self.center[1])/(q[0] - self.center[0])))
-        #engineer's method
-        dx = 10**-10
-        return math.degrees(angle_3_points(q,self.center, [self.center[0] + dx, self.center[1]]))
-
     def roundify(self):
         if self.blend and self.arc_start != None and self.arc_finish != None:
             circle_coords = lambda b : [self.center[0]+self.radius*math.cos(math.radians(b)), self.center[1]+self.radius*math.sin(math.radians(b))]
-            start_angle = self._angle_of(self.arc_start)
-            end_angle = self._angle_of(self.arc_finish)
+            start_angle = angle_of(self.arc_start)
+            end_angle = angle_of(self.arc_finish)
             theta = math.degrees(angle_3_points(self.arc_start, self.center, self.arc_finish))
 
             print("Center: "+str(self.center))

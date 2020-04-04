@@ -9,6 +9,7 @@ from voronoi import *
 from utils import *
 from sectors import *
 from catmull import *
+from offset import *
 
 BOUNDARY_DEFAULT_SCALE = 0.1
 
@@ -253,4 +254,8 @@ track.flag_dense_corners()
 for c in track.corners:
     track.round(c)
 track.plot_out(orderedCorners = True, orderedStraights = True)
+
+o = Offstpoly()
+o.offset_loop([[c.x,c.y] for c in track.corners], 0.2)
+plt.plot([p[0] for p in o.poly], [p[1] for p in o.poly])
 #track.plot_fill()

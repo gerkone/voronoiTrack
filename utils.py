@@ -51,7 +51,7 @@ def angle_3_points(A, B, C):
 		x3,y3 = C[0],C[1]
 	return (math.acos(((x2-x1)*(x2-x3)+(y2-y1)*(y2-y3))/float(l1*l2)))
 
-# def offset(points, offset):
-# 	pco = pyclipper.PyclipperOffset()
-# 	pco.AddPath([[p.x, p.y] for p in points], pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
-# 	return pco.Execute(offset)
+def angle_of(q,center):
+	#engineer's method
+    dx = 10**-10
+    return math.degrees(angle_3_points(q, center, [center[0] + dx, center[1]]))
