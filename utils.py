@@ -58,7 +58,12 @@ def angle_3_points(A, B, C):
 		x3,y3 = C.x,C.y
 	else:
 		x3,y3 = C[0],C[1]
-	return (math.acos(((x2-x1)*(x2-x3)+(y2-y1)*(y2-y3))/float(l1*l2)))
+	return math.acos(((x2-x1)*(x2-x3)+(y2-y1)*(y2-y3))/float(l1*l2))
+
+def angle_of(q,center):
+	#engineer's method
+    dx = 10**-10
+    return (angle_3_points(q, center, [center[0] + dx, center[1]]))
 
 def vecFromTo(S, E):
     return [E[0]-S[0], E[1]-S[1]]
@@ -68,8 +73,3 @@ def vecCrossProd(A, B):
 
 def angleVec(V):
     return math.degrees(np.arctan2(V[1],V[0]))%360
-
-# def offset(points, offset):
-# 	pco = pyclipper.PyclipperOffset()
-# 	pco.AddPath([[p.x, p.y] for p in points], pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
-# 	return pco.Execute(offset)

@@ -4,11 +4,11 @@ import math
 from collections import deque
 import matplotlib.pyplot as plt
 import json
+import time
 
 from voronoi import *
 from utils import *
 from sectors import *
-from catmull import *
 from offset import *
 
 BOUNDARY_DEFAULT_SCALE = 0.1
@@ -189,16 +189,39 @@ class Track:
         for e in ext:
             v1 = self._element(e.start_node)
             v2 = self._element(e.end_node)
-            plt.plot([v1.x, v2.x], [v1.y, v2.y], c="r", lw=1)
-            plt.plot([q[0] for q in v1.arc_points],[q[1] for q in v1.arc_points], c="g")
+            plt.plot([v1.x,v2.x],[v1.y,v2.y], c="r")
             if orderedStraights:
                 label = str(j)
                 plt.annotate(label, ((v1.x + v2.x)/2., (v1.y + v2.y)/2.))
                 j = j + 1
                 # if v1.spline:
-                #     plt.plot([v1.x, v2.x], [v1.y, v2.y], "ro", lw=1)
+                #     plt.plot([v1.x, v2.x], [v1.y, v2.y], "ro")
                 # else:
-                #     plt.plot([v1.x, v2.x], [v1.y, v2.y], "ko", lw=1)
+                #     plt.plot([v1.x, v2.x], [v1.y, v2.y], "ko")
+        plt.show()
+
+    def _track2points(self):
+        p = []
+        for s in self.straights:
+            v1 = self._element(s.start_node)
+            v2 = self._element(s.end_node)
+            p.append(v1.arc_finish)
+            p.append(v2.arc_start)
+            for ap in v2.arc_points:
+                p.append(ap)
+        return p
+
+    def plot_track(self, width=4):
+        plt.xlim(left=self.boundary._x_min(), right=self.boundary._x_max())
+        plt.ylim(bottom=self.boundary._y_min(), top=self.boundary._y_max())
+        p = self._track2points()
+        xs = []
+        ys = []
+        for q in p:
+            xs.append(q[0])
+            ys.append(q[1])
+        plt.plot(xs, ys, c="k", lw=width)
+        plt.plot(xs, ys, c="r", lw=1)
         plt.show()
 
     def plot_fill(self):
@@ -208,11 +231,11 @@ class Track:
         ax.fill(xs,ys,color="r")
         plt.show()
 
-    def round(self, corner, previous_f=None):
+    def round(self, corner, previous_f=None, min_radius=0.15):
         if previous_f and previous_f > 0.1:
             f = 1-previous_f
         else:
-            f = random.uniform(0.3, 0.5)
+            f = random.uniform(min_radius, 0.5)
         A = self._element(self._element(corner.prev_straight).start_node)
         B = corner
         C = self._element(self._element(corner.next_straight).end_node)
@@ -244,18 +267,3 @@ class Track:
         corner.arc_finish = T2
         corner.flagBlend()
         corner.roundify()
-
-track = Track([100,100],70, 326297323) #rand.randint(0,2**32-1)) # 211560145) #rand.randint(0,2**32-1))
-track.select(0.5)
-# track.figure.plot(boundary = track.boundary)
-track.starting_line()
-track.flag_dense_corners()
-# print(str([c.x for c in track.corners]))
-for c in track.corners:
-    track.round(c)
-track.plot_out(orderedCorners = True, orderedStraights = True)
-
-o = Offstpoly()
-o.offset_loop([[c.x,c.y] for c in track.corners], 0.2)
-plt.plot([p[0] for p in o.poly], [p[1] for p in o.poly])
-#track.plot_fill()
