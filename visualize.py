@@ -1,6 +1,7 @@
 import argparse
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 def read_points(data):
     xs = []
@@ -16,18 +17,35 @@ def plot(data, seed):
     fig, axs = plt.subplots(1, 1, constrained_layout=True)
     axs.plot(xs, ys, c="k", lw=5)
     axs.plot(xs, ys, c="r", lw=1)
+    plt.gca().set_aspect('equal', adjustable='box')
     fig.suptitle("seed: " + str(seed))
     plt.show()
 
-parser = argparse.ArgumentParser(description="Visualize a track previously stored in a file.")
+parser = argparse.ArgumentParser(description="Visualize a track previously stored in a file. If both -f and -s flags are present, only the -s one will be considered")
 
-parser.add_argument("file", help="Input file from where to load the track data.", default="", type=str)
+parser.add_argument("-f", "--file", help="Input file from where to load the track data.", default="", type=str)
+parser.add_argument("-s", "--seed", help="Search the tracks/ directory for already generated tracks.", default="", type=str)
 
 args = parser.parse_args()
-#ugly
-seed = args.file.split("_")[1].split(".")[0]
+if args.seed:
+    try:
+        file = "tracks/track_"+str(int(args.seed))+".npy"
+    except ValueError:
+        print("The input is not a valid seed.")
+        exit()
+    seed = args.seed
+elif args.file:
+    file = args.file
+    seed = args.file.split("_")[1].split(".")[0]
+else:
+    print("At least one flag must be specified.")
+    exit()
+try:
+    if not os.path.exists(file):
+        raise IOError()
+except IOError:
+    print("The track with that seed doesn't exists, please generate that file using: python3 voronoiTrack.py -q -s SEED -b 1")
+    exit()
 
-points = np.load(args.file)
+points = np.load(file)
 plot(points,seed)
-
-

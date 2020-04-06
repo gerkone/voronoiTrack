@@ -3,14 +3,19 @@ import sys
 import random
 import os
 
+from datetime import datetime
+from track import *
+
 class colors:
     OKGREEN = "\033[92m"
     INFO = "\033[93m"
     FAIL = "\033[91m"
     CLOSE = "\033[0m"
 
-from datetime import datetime
-from track import *
+
+def simple_log(data, filename="seeds.log"):
+    with open(filename, 'a') as f:
+        f.write(data)
 
 track_dir = "tracks/"
 description_str = "Procedural track generation using random Voronoi diagram."
@@ -24,7 +29,7 @@ parser.add_argument("--mode", choices=["bfs", "hull"], default="hull",
                     help="Track selection mode.\n" +
                     "\"bfs\" - using a bredth first-style visit for selection.\n" +
                     "\"hull\" - select the points inside a random convex hull (default).")
-parser.add_argument("--seed", type=int, help="The seed used in generation.", default=random.randrange(sys.maxsize))
+parser.add_argument("-s", "--seed", type=int, help="The seed used in generation.", default=random.randrange(sys.maxsize))
 parser.add_argument("--cover", type=int, help="(bfs mode only) Percentage of the voronoi diagram area to be covered by the track selection (default: 50).", default=50)
 parser.add_argument("--span", type=int, help="(hull mode only) Percentage of the boundary area in which the hull is generated (default: 50).", default=50)
 parser.add_argument("-q", "--quiet", help="Disable plotting of the generated track.", default=False, action="store_true")
@@ -40,33 +45,26 @@ while i != args.batch or i == 0:
     # TODO: aggiungere controlli sul dominio dei vari args
 
     if len(args.boundary) == 2 and isinstance(args.npoints,int):
-
         track = Track(args.boundary, args.npoints, seed) #6928203095324602024
         if args.mode == "hull":
             perc = args.span/100.
         elif args.mode == "bfs":
             perc == args.cover/100.
         track.select(perc, method=args.mode)
-        # track.figure.plot()
         track.starting_line()
-        track.flag_dense_corners()
         min_radius = 0.3*args.softness/100.+0.1
         for c in track.corners:
             track.round(c, args.verbose, min_radius = min_radius)
-
         if not args.quiet:
             track.plot_track(width=16)
-
         if args.verbose:
-            print(colors.INFO + "--- Generating track " + str(i + 1) + "---" + colors.CLOSE)
-
+            print(colors.INFO + "Generating track " + str(i + 1) + " with seed " + str(seed) + colors.CLOSE)
+        simple_log(datetime.now().strftime("[%d/%m/%Y %H:%M:%S]") + " " + str(seed) + "\n")
         if i < args.batch:
             try:
                 os.mkdir(track_dir)
             except:
                 pass
-            # now = datetime.now()
-            # date_time = now.strftime("%Y%m%d%H%M%S")
             track.store(track_dir + "track_" + str(seed) + ".npy")
             seed = random.randrange(sys.maxsize)
         else:

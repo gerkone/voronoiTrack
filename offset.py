@@ -12,10 +12,6 @@ class Offstpoly:
         returns the coefficients and the lht.
         """
         t = angle_of(a,b)
-        # if in_hull([a[0]-r*math.sin(t),a[1]+r*math.cos(t)], self.inner):
-        #     s = -1
-        # else:
-        #     s = 1
         s = 1
         return math.tan(t), (a[1]+s*r*math.cos(t) - math.tan(t)*(a[0]-s*r*math.sin(t)))
 
@@ -31,7 +27,7 @@ class Offstpoly:
 
     def offset_loop(self, radius):
         #minimum lenght of a single straight, prevents overlapping ( temporary )
-        
+
         min_s = 2
         i1 = 0
         i2 = 1
@@ -42,7 +38,7 @@ class Offstpoly:
             c2 = self.inner[i2]
             c3 = self.inner[i3]
             # if distance(c1,c2) < min_s*radius:
-               
+
             if distance(c2,c3) < min_s*radius:
                 #leap a edge
                 i3 = (i3 + 1)%l

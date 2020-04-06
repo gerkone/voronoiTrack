@@ -80,15 +80,32 @@ class Corner:
     def __str__(self):
         return ("id: " +str(self.id)+ "\n")
 
+    def _vecFromTo(self, S, E):
+        return [E[0]-S[0], E[1]-S[1]]
+
+    def _vecCrossProd(self, A, B):
+        return A[0]*B[1]-A[1]*B[0]
+
+    def _angleVec(self, V):
+        return math.degrees(np.arctan2(V[1],V[0]))%360
+
+    def _sign(self, a):
+    	if a > 0:
+    		return 1
+    	elif a < 0:
+    		return -1
+    	else:
+    		return 0
+
     def roundify(self, v, includeLimits=False):
         if self.blend and self.arc_start != None and self.arc_finish != None:
             circle_coords = lambda b : [self.center[0]+self.radius*math.cos(math.radians(b)), self.center[1]+self.radius*math.sin(math.radians(b))]
-            vec_start = vecFromTo(self.center, self.arc_start)
-            vec_end = vecFromTo(self.center, self.arc_finish)
-            s = sign(vecCrossProd(vec_start, vec_end))
+            vec_start = self._vecFromTo(self.center, self.arc_start)
+            vec_end = self._vecFromTo(self.center, self.arc_finish)
+            s = self._sign(self._vecCrossProd(vec_start, vec_end))
 
-            angle_start = angleVec(vec_start)
-            angle_end = angleVec(vec_end)
+            angle_start = self._angleVec(vec_start)
+            angle_end = self._angleVec(vec_end)
             theta = math.degrees(angle_3_points(self.arc_start, self.center, self.arc_finish))
             if v > 1:
                 print("AS: "+str(angle_start))

@@ -32,14 +32,20 @@ class Track:
         self.figure.cleanup()
         np.set_printoptions(threshold=sys.maxsize)
 
+    def _get_by_ID(self, id, L):
+    	for el in L:
+    		if el.id == id:
+    			return el
+    	return None
+
     def _element(self, ID):
         if ID is None:
             print("ID of _element is None")
             return None
-        element = get_by_ID(ID, self.straights)
+        element = self._get_by_ID(ID, self.straights)
         if element is not None:
             return element
-        element = get_by_ID(ID, self.corners)
+        element = self._get_by_ID(ID, self.corners)
         if element is not None:
             return element
         print("Found nothing")
@@ -72,6 +78,12 @@ class Track:
                     if adj not in q and not adj.selected:        #does not enqueue already enqueued and already selected
                         q.append(adj)
 
+    def _in_hull(self, p, hull):
+        from scipy.spatial import Delaunay
+        if not isinstance(hull,Delaunay):
+            hull = Delaunay(hull)
+        return hull.find_simplex(p)>=0
+
     def select_by_hull(self, perc, n = 5):
         """
         Draws a random n-edged hull over the voronoi diagram; only the cells that
@@ -93,7 +105,7 @@ class Track:
         #scans for vertices inside the hull
         v_counter = 0
         for v in self.figure.vertices.values():
-            if in_hull([[v.x,v.y]], [convex.points[i] for i in convex.vertices])[0]:
+            if self._in_hull([[v.x,v.y]], [convex.points[i] for i in convex.vertices])[0]:
                 v_counter = v_counter + 1
                 for c in v.cells:
                     (self.figure.cells.get(c)).flag_selected()
@@ -156,6 +168,7 @@ class Track:
         corners close to one another and mark them for spline.
         tol: tolerance relative to the average straight length as minimum distance between corners to be splined
         min_p: minumum corners to be found grouped
+        (deprecated)
         """
         max_d = tol*self.avg_straight_length()
         i = 0

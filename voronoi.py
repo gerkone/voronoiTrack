@@ -20,11 +20,8 @@ class Vor:
         self.vertices = {}
         self.seed = seed
         random.seed(self.seed)
-        simple_log(datetime.now().strftime("[%d/%m/%Y %H:%M:%S]") + " " + str(seed) + "\n")
-
         randx = random.sample(range(boundary.x+1),npoints)  #random xs no repetition
         randy = random.sample(range(boundary.y+1),npoints)  #random ys no repetition
-
         for i in range(npoints):
             id = generator.uuid1().int
             self.sites[id] = (Site(randx[i], randy[i], id))
@@ -58,11 +55,16 @@ class Vor:
                     self.sites[list(self.sites.keys())[int(site_index[0])]].connect_cell(new_cell)
                     self.cells[id] = new_cell
         for k in self.edges.keys():
-            cell_ids = intersect(self.vertices.get(self.edges[k].v1).cells, self.vertices.get(self.edges[k].v2).cells)
+            cell_ids = self._intersect(self.vertices.get(self.edges[k].v1).cells, self.vertices.get(self.edges[k].v2).cells)
             self.edges[k].cells = cell_ids
             for cid in cell_ids:
                 self.cells.get(cid).connect_edge(self.edges[k])
         self.cleanup()
+
+    def _intersect(self,L1,L2):
+    	t = set(L2)
+    	LI = [x for x in L1 if x in t]
+    	return LI
 
     #bug if there are two or more detached cells (condition of 0 adjacent cells is passed)
     def cleanup(self):
