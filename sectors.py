@@ -90,7 +90,7 @@ class Corner:
             angle_start = angleVec(vec_start)
             angle_end = angleVec(vec_end)
             theta = math.degrees(angle_3_points(self.arc_start, self.center, self.arc_finish))
-            if v > 0:
+            if v > 1:
                 print("AS: "+str(angle_start))
                 print("AE: "+str(angle_end))
                 print("T: "+str(theta))

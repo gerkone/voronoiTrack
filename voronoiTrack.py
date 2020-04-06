@@ -1,7 +1,13 @@
 import argparse
 import sys
 import random
-import os 
+import os
+
+class colors:
+    OKGREEN = "\033[92m"
+    INFO = "\033[93m"
+    FAIL = "\033[91m"
+    CLOSE = "\033[0m"
 
 from datetime import datetime
 from track import *
@@ -23,25 +29,24 @@ parser.add_argument("--cover", type=int, help="(bfs mode only) Percentage of the
 parser.add_argument("--span", type=int, help="(hull mode only) Percentage of the boundary area in which the hull is generated (default: 50).", default=50)
 parser.add_argument("-q", "--quiet", help="Disable plotting of the generated track.", default=False, action="store_true")
 parser.add_argument("-b", "--batch", help="Number of tracks to generate and save.\n " +
-                    "The generated tracks will be stored in " + track_dir +" (default: disabled). ", default=0, type=int)
+                    "The generated tracks will be stored in " + track_dir +" in numpy array format (default: disabled). ", default=0, type=int)
 
 args = parser.parse_args()
 i = 0
 if isinstance(args.seed, int):
     seed = args.seed
 
-while i != args.batch:
+while i != args.batch or i == 0:
     # TODO: aggiungere controlli sul dominio dei vari args
 
     if len(args.boundary) == 2 and isinstance(args.npoints,int):
-        
-        track = Track(args.boundary, args.npoints, seed)
+
+        track = Track(args.boundary, args.npoints, seed) #6928203095324602024
         if args.mode == "hull":
             perc = args.span/100.
         elif args.mode == "bfs":
             perc == args.cover/100.
         track.select(perc, method=args.mode)
-
         # track.figure.plot()
         track.starting_line()
         track.flag_dense_corners()
@@ -51,6 +56,9 @@ while i != args.batch:
 
         if not args.quiet:
             track.plot_track(width=16)
+
+        if args.verbose:
+            print(colors.INFO + "--- Generating track " + str(i + 1) + "---" + colors.CLOSE)
 
         if i < args.batch:
             try:
