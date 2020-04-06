@@ -11,11 +11,11 @@ def read_points(data):
         ys.append(q[1])
     return xs, ys
 
-def plot(data, seed):
+def plot(data, seed, width):
     xs, ys = read_points(data)
 
     fig, axs = plt.subplots(1, 1, constrained_layout=True)
-    axs.plot(xs, ys, c="k", lw=5)
+    axs.plot(xs, ys, c="k", lw=width)
     axs.plot(xs, ys, c="r", lw=1)
     plt.gca().set_aspect('equal', adjustable='box')
     fig.suptitle("seed: " + str(seed))
@@ -25,6 +25,7 @@ parser = argparse.ArgumentParser(description="Visualize a track previously store
 
 parser.add_argument("-f", "--file", help="Input file from where to load the track data.", default="", type=str)
 parser.add_argument("-s", "--seed", help="Search the tracks/ directory for already generated tracks.", default="", type=str)
+parser.add_argument("-w", "--width", type=int, help="Width of the track (default: 5)", default=5)
 
 args = parser.parse_args()
 if args.seed:
@@ -44,8 +45,8 @@ try:
     if not os.path.exists(file):
         raise IOError()
 except IOError:
-    print("The track with that seed doesn't exists, please generate that file using: python3 voronoiTrack.py -q -s SEED -b 1")
+    print("The track with that seed doesn't exists, please generate that file using: python3 generate.py -q -s SEED -b 1")
     exit()
 
 points = np.load(file)
-plot(points,seed)
+plot(points,seed, args.width)

@@ -25,6 +25,7 @@ parser.add_argument("-v", "--verbose", help="Set verbosity level.", action="coun
 parser.add_argument("--boundary", help="Specify the x and y values of the track boundary (default:  100 100).", nargs=2, type=int, default=[100, 100])
 parser.add_argument("--npoints", type=int, help="The number of sites in the Voronoi diagram (points that generate the diagram) (default: 70).", default=70)
 parser.add_argument("--softness", type=int, help="Percentage indicating the average smoothness of the corners (default: 66)", default=66)
+parser.add_argument("--width", type=int, help="Width of the track (default: 5)", default=5)
 parser.add_argument("--mode", choices=["bfs", "hull"], default="hull",
                     help="Track selection mode.\n" +
                     "\"bfs\" - using a bredth first-style visit for selection.\n" +
@@ -56,7 +57,7 @@ while i != args.batch or i == 0:
         for c in track.corners:
             track.round(c, args.verbose, min_radius = min_radius)
         if not args.quiet:
-            track.plot_track(width=16)
+            track.plot_track(width=args.width)
         if args.verbose:
             print(colors.INFO + "Generating track " + str(i + 1) + " with seed " + str(seed) + colors.CLOSE)
         simple_log(datetime.now().strftime("[%d/%m/%Y %H:%M:%S]") + " " + str(seed) + "\n")
