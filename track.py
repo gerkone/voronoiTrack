@@ -5,6 +5,7 @@ from collections import deque
 import matplotlib.pyplot as plt
 import json
 import time
+import sys
 
 from voronoi import *
 from utils import *
@@ -21,7 +22,7 @@ class Track:
     def __init__(self, boundary, npoints, seed, verbose=False, scale=BOUNDARY_DEFAULT_SCALE):
         self.straights = deque()
         self.corners = deque()
-
+        self.seed = seed
         random.seed(seed)
         self.boundary = Boundary(boundary[0],boundary[1], scale)
         self.figure = Vor(npoints, self.boundary, seed)
@@ -29,6 +30,7 @@ class Track:
             if(self.figure.vertices.get(v_key)._is_out_of_bounds(self.boundary)):
                 self.figure.delete_element(v_key, False)
         self.figure.cleanup()
+        np.set_printoptions(threshold=sys.maxsize)
 
     def _element(self, ID):
         if ID is None:
@@ -211,6 +213,14 @@ class Track:
                 p.append(ap)
         return p
 
+    def store(self,filename):
+        # with open(filename, "w") as f:
+        #     f.write(str(self.seed))
+        #     f.write("\n")
+        #     f.write(str())
+        track_points = np.array(self._track2points())
+        np.save(filename, track_points)
+
     def plot_track(self, width=4):
         plt.xlim(left=self.boundary._x_min(), right=self.boundary._x_max())
         plt.ylim(bottom=self.boundary._y_min(), top=self.boundary._y_max())
@@ -231,7 +241,7 @@ class Track:
         ax.fill(xs,ys,color="r")
         plt.show()
 
-    def round(self, corner, previous_f=None, min_radius=0.15):
+    def round(self, corner, v, previous_f=None, min_radius=0.15):
         if previous_f and previous_f > 0.1:
             f = 1-previous_f
         else:
@@ -266,4 +276,4 @@ class Track:
         corner.arc_start = T1
         corner.arc_finish = T2
         corner.flagBlend()
-        corner.roundify()
+        corner.roundify(v)

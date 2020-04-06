@@ -80,7 +80,7 @@ class Corner:
     def __str__(self):
         return ("id: " +str(self.id)+ "\n")
 
-    def roundify(self, includeLimits=False):
+    def roundify(self, v, includeLimits=False):
         if self.blend and self.arc_start != None and self.arc_finish != None:
             circle_coords = lambda b : [self.center[0]+self.radius*math.cos(math.radians(b)), self.center[1]+self.radius*math.sin(math.radians(b))]
             vec_start = vecFromTo(self.center, self.arc_start)
@@ -90,9 +90,10 @@ class Corner:
             angle_start = angleVec(vec_start)
             angle_end = angleVec(vec_end)
             theta = math.degrees(angle_3_points(self.arc_start, self.center, self.arc_finish))
-            # print("AS: "+str(angle_start))
-            # print("AE: "+str(angle_end))
-            # print("T: "+str(theta))
+            if v > 0:
+                print("AS: "+str(angle_start))
+                print("AE: "+str(angle_end))
+                print("T: "+str(theta))
             anglespace = np.linspace(0, theta, num=ANGLE_RES, endpoint=includeLimits)
 
             for b in anglespace:
@@ -100,6 +101,5 @@ class Corner:
                 self.arc_points.append(p)
             if not includeLimits:
                 self.arc_points.pop(0)
-            print("")
         else:
             return
