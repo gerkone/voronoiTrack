@@ -6,6 +6,9 @@ import os
 from datetime import datetime
 from track import *
 
+track_dir = "tracks/"
+logs_dir = "logs/"
+
 class colors:
     OKGREEN = "\033[92m"
     INFO = "\033[93m"
@@ -14,10 +17,10 @@ class colors:
 
 
 def simple_log(data, filename="seeds.log"):
-    with open(filename, 'a') as f:
+    with open(logs_dir + filename, 'a') as f:
         f.write(data)
 
-track_dir = "tracks/"
+
 description_str = "Procedural track generation using random Voronoi diagram."
 
 parser = argparse.ArgumentParser(description=description_str, formatter_class=argparse.RawTextHelpFormatter)
@@ -55,11 +58,19 @@ while i != args.batch or i == 0:
         track.starting_line()
         min_radius = 0.3*args.softness/100.+0.1
         for c in track.corners:
-            track.round(c, args.verbose, min_radius = min_radius)
+            try:
+                track.round(c, args.verbose, min_radius = min_radius)
+            except ValueError:
+                #temporary bad fix
+                pass
         if not args.quiet:
             track.plot_track(width=args.width)
         if args.verbose:
             print(colors.INFO + "Generating track " + str(i + 1) + " with seed " + str(seed) + colors.CLOSE)
+        try:
+            os.mkdir(logs_dir)
+        except:
+            pass
         simple_log(datetime.now().strftime("[%d/%m/%Y %H:%M:%S]") + " " + str(seed) + "\n")
         if i < args.batch:
             try:

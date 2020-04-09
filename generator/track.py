@@ -151,7 +151,7 @@ class Track:
             self.straights.rotate(1)
             self.corners.rotate(1)
 
-    def avg_straight_length(self):
+    def _avg_straight_length(self):
         return sum([distance(self._element(s.start_node), self._element(s.end_node)) for s in self.straights])/len(self.straights)
 
     def starting_line(self):
@@ -170,7 +170,7 @@ class Track:
         min_p: minumum corners to be found grouped
         (deprecated)
         """
-        max_d = tol*self.avg_straight_length()
+        max_d = tol*self._avg_straight_length()
         i = 0
         while i < len(self.corners):
             next_straight = self._element(self.corners[i].next_straight)
@@ -215,13 +215,19 @@ class Track:
                 #     plt.plot([v1.x, v2.x], [v1.y, v2.y], "ko")
         plt.show()
 
-    def _track2points(self):
+    def _track2points(self, plot_step = 0.5):
         p = []
         for s in self.straights:
             v1 = self._element(s.start_node)
             v2 = self._element(s.end_node)
-            p.append(v1.arc_finish)
-            p.append(v2.arc_start)
+            q1 = v1.arc_finish
+            q2 = v2.arc_start
+            p.append(q1)
+            st = lambda x: (q2[1]-q1[1])/(q2[0]-q1[0])*(x - q1[0]) + q1[1]
+            nsteps = int(abs(q2[0]-q1[0])/plot_step)
+            for x in np.linspace(q1[0],q2[0],nsteps,endpoint=False):
+                p.append([x,st(x)])
+            p.append(q2)
             for ap in v2.arc_points:
                 p.append(ap)
         return p
