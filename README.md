@@ -15,7 +15,7 @@ The script that is used to generate the track is `generate.py`. Some options reg
 - `--npoints N`, the number of starting points (*usually* affects the track complexity);
 - `--softness P`, a indicative number for the "smoothness" of the corners.
 Some options regarding the track selection mode:
-- `--cover PERC`, used for the "bfs" selection mode. Sets the upper bound of the area to be covered as prcentage of the total area;
+- `--cover PERC`, used for the "bfs" selection mode. Sets the upper bound of the area to be covered as percentage of the total area (area of every cell);
 - `--span PERC`, used in the "hull" mode. Sets the boundary in which to generate the hull points as percentage of the `boundary`.
 
 The tracks generated using the `generate.py` script can be stored as 2 dimensional point array (in numpy format) by specifying the batch size with `-b SIZE`/`--batch SIZE`.
