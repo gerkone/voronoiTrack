@@ -1,5 +1,5 @@
 # voronoiTrack
-Procedural 2D track generation using randomly generated Voronoi diagram.
+2D track generation using randomly generated Voronoi diagram.
 
 **This project is still in early developement, many solutions are temporary and many options are not available.**
 
