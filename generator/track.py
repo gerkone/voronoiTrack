@@ -215,7 +215,7 @@ class Track:
                 #     plt.plot([v1.x, v2.x], [v1.y, v2.y], "ko")
         plt.show()
 
-    def _track2points(self, plot_step = 0.5):
+    def _track2points(self, plot_step = 0.01):
         p = []
         for s in self.straights:
             v1 = self._element(s.start_node)
