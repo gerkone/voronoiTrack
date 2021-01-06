@@ -10,7 +10,6 @@ import sys
 from voronoi import *
 from utils import *
 from sectors import *
-from offset import *
 
 BOUNDARY_DEFAULT_SCALE = 0.1
 
